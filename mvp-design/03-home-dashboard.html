@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>AEGIS - Home Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body>
+    <div class="flex items-center justify-center min-h-screen bg-gray-900 p-4">
+        <div class="w-[375px] h-[812px] bg-slate-50 rounded-[3rem] overflow-hidden shadow-2xl relative">
+            <!-- Status Bar -->
+            <div class="flex justify-between items-center px-8 pt-4 text-gray-800 text-sm bg-white">
+                <span>9:41</span>
+                <div class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                    <svg class="w-6 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><rect x="4" y="9" width="12" height="6" rx="1"/></svg>
+                </div>
+            </div>
+            
+            <!-- Header -->
+            <div class="bg-white px-5 pt-4 pb-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            SP
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm">Good morning,</p>
+                            <p class="text-gray-900 font-bold text-lg">SI Priya Sharma</p>
+                        </div>
+                    </div>
+                    <a href="17-notifications.html" class="relative p-2">
+                        <span class="material-symbols-outlined text-gray-700 text-2xl">notifications</span>
+                        <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content -->
+            <div class="h-[calc(100%-200px)] overflow-y-auto px-5 pt-4 pb-24">
+                <!-- Priority Alert Card -->
+                <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 mb-4 shadow-lg shadow-red-500/20">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-white/90 text-lg" style="font-variation-settings: 'FILL' 1;">priority_high</span>
+                                <span class="text-white/90 text-xs font-semibold uppercase tracking-wide">Critical Priority</span>
+                            </div>
+                            <p class="text-white font-bold text-lg mb-1">3 High-Risk Alerts</p>
+                            <p class="text-white/80 text-sm">Immediate attention required</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-white/70 text-xs">Est. at risk</p>
+                            <p class="text-white font-bold text-xl">₹12.5L</p>
+                        </div>
+                    </div>
+                    <a href="05-alert-list.html" class="w-full mt-4 py-2.5 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition block">
+                        <span>View Alerts</span>
+                        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                    </a>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-2 gap-3 mb-5">
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-outlined text-blue-600 text-lg">task_alt</span>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900">24</p>
+                        <p class="text-gray-500 text-xs">Cases Today</p>
+                        <p class="text-green-600 text-xs font-medium mt-1">↑ 12% from yesterday</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-outlined text-green-600 text-lg">savings</span>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900">₹8.2L</p>
+                        <p class="text-gray-500 text-xs">Recovered Today</p>
+                        <p class="text-green-600 text-xs font-medium mt-1">↑ 28% recovery rate</p>
+                    </div>
+                </div>
+                
+                <!-- Live Activity -->
+                <div class="mb-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-900">Live Activity</h3>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            <span class="text-green-600 text-xs font-medium">Live</span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <!-- Activity Item 1 -->
+                        <div class="bg-white rounded-xl p-3.5 shadow-sm flex items-center gap-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-red-600 text-xl">warning</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-gray-900 font-medium text-sm truncate">New fraud alert - Andheri West</p>
+                                <p class="text-gray-500 text-xs">₹3.5L • Predicted withdrawal: 45 mins</p>
+                            </div>
+                            <span class="text-gray-400 text-xs">2m ago</span>
+                        </div>
+                        
+                        <!-- Activity Item 2 -->
+                        <div class="bg-white rounded-xl p-3.5 shadow-sm flex items-center gap-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-green-600 text-xl">check_circle</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-gray-900 font-medium text-sm truncate">Account frozen - Case #MH-2847</p>
+                                <p class="text-gray-500 text-xs">₹2.1L saved • SBI Mule account</p>
+                            </div>
+                            <span class="text-gray-400 text-xs">8m ago</span>
+                        </div>
+                        
+                        <!-- Activity Item 3 -->
+                        <div class="bg-white rounded-xl p-3.5 shadow-sm flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-blue-600 text-xl">groups</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-gray-900 font-medium text-sm truncate">Team Alpha deployed - Borivali</p>
+                                <p class="text-gray-500 text-xs">ETA 12 mins • High-value case</p>
+                            </div>
+                            <span class="text-gray-400 text-xs">15m ago</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Insights -->
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined text-cyan-400 text-xl">auto_awesome</span>
+                        <span class="text-white font-semibold">AI Intelligence</span>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-3">
+                        Predicted surge in <span class="text-cyan-400 font-medium">OTP fraud</span> activities in South Mumbai between 2-5 PM today. Consider increased monitoring.
+                    </p>
+                    <a href="20-ai-analysis.html" class="text-cyan-400 text-sm font-medium flex items-center gap-1 hover:text-cyan-300 transition">
+                        View Analysis
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <div class="absolute bottom-0 left-0 right-0 h-20 bg-white border-t border-gray-100 px-6">
+                <div class="flex items-center justify-around h-full">
+                    <a href="03-home-dashboard.html" class="flex flex-col items-center gap-1 text-blue-600">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">home</span>
+                        <span class="text-xs font-medium">Home</span>
+                    </a>
+                    <a href="05-alert-list.html" class="flex flex-col items-center gap-1 text-gray-400">
+                        <span class="material-symbols-outlined text-2xl">shield</span>
+                        <span class="text-xs font-medium">Alerts</span>
+                    </a>
+                    <a href="10-map-view.html" class="flex flex-col items-center gap-1 text-gray-400">
+                        <span class="material-symbols-outlined text-2xl">map</span>
+                        <span class="text-xs font-medium">Map</span>
+                    </a>
+                    <a href="13-statistics.html" class="flex flex-col items-center gap-1 text-gray-400">
+                        <span class="material-symbols-outlined text-2xl">bar_chart</span>
+                        <span class="text-xs font-medium">Stats</span>
+                    </a>
+                    <a href="16-profile.html" class="flex flex-col items-center gap-1 text-gray-400">
+                        <span class="material-symbols-outlined text-2xl">person</span>
+                        <span class="text-xs font-medium">Profile</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Simulate New Alert Button -->
+            <a href="04-new-complaint-alert.html" class="absolute bottom-24 right-5 z-10 px-4 py-2 bg-red-500 text-white rounded-full text-sm font-medium shadow-lg animate-pulse">
+                🚨 Simulate Alert
+            </a>
+        </div>
+    </div>
+    
+    <!-- Navigation hint -->
+    <a href="00-FLOWCHART.html" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 z-50">
+        View Flow →
+    </a>
+</body>
+</html>
+

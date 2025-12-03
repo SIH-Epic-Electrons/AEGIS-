@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>AEGIS MVP - Screen Flow Chart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">🛡️ AEGIS MVP - Screen Flow</h1>
+            <p class="text-gray-400">Click any screen to open it • Complete clickable prototype</p>
+            <p class="text-cyan-400 text-sm mt-2">Anticipatory Engine for Geolocated Intervention against Scams</p>
+        </div>
+
+        <!-- CORE VALUE PROPOSITION -->
+        <div class="bg-gradient-to-r from-cyan-900/50 to-blue-900/50 border border-cyan-500/30 rounded-3xl p-6 mb-8">
+            <h2 class="text-xl font-bold text-white mb-4 text-center">🎯 What AEGIS Does (Core Value)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-slate-800/50 rounded-xl p-4">
+                    <p class="text-3xl mb-2">📝</p>
+                    <p class="text-white font-bold">1. Complaint Received</p>
+                    <p class="text-gray-400 text-sm">From NCRP Portal</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-4">
+                    <p class="text-3xl mb-2">🧠</p>
+                    <p class="text-white font-bold">2. AI Predicts Location</p>
+                    <p class="text-gray-400 text-sm">Where money will be withdrawn</p>
+                </div>
+                <div class="bg-gradient-to-r from-green-600/30 to-emerald-600/30 border border-green-500 rounded-xl p-4">
+                    <p class="text-3xl mb-2">📍</p>
+                    <p class="text-green-400 font-bold">3. Alert Nearby Teams</p>
+                    <p class="text-green-300 text-sm">Police stations near predicted ATM</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-4">
+                    <p class="text-3xl mb-2">🚔</p>
+                    <p class="text-white font-bold">4. Intercept & Freeze</p>
+                    <p class="text-gray-400 text-sm">Stop money withdrawal</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN FLOW SECTION -->
+        <div class="bg-slate-800 rounded-3xl p-8 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">📱 Main User Journey (Happy Path)</h2>
+            
+            <!-- Step by Step Flow -->
+            <div class="space-y-6">
+                <!-- Step 1: Entry -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">1</div>
+                    <a href="01-splash.html" class="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl p-4 hover:scale-105 transition cursor-pointer block">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">Splash Screen</p>
+                                <p class="text-white/70 text-sm">App opens → Loading → Auto-navigates to Login</p>
+                            </div>
+                            <span class="text-white/50">01-splash.html →</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="w-0.5 h-8 bg-blue-500"></div>
+                </div>
+                
+                <!-- Step 2: Login -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">2</div>
+                    <a href="02-login.html" class="flex-1 bg-slate-700 rounded-xl p-4 hover:bg-slate-600 transition cursor-pointer block">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">Login Screen</p>
+                                <p class="text-gray-400 text-sm">Officer enters Badge ID + Password → Clicks "Sign In"</p>
+                            </div>
+                            <span class="text-gray-500">02-login.html →</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="w-0.5 h-8 bg-blue-500"></div>
+                </div>
+                
+                <!-- Step 3: Home Dashboard -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">3</div>
+                    <a href="03-home-dashboard.html" class="flex-1 bg-slate-700 rounded-xl p-4 hover:bg-slate-600 transition cursor-pointer block">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">Home Dashboard</p>
+                                <p class="text-gray-400 text-sm">Officer sees overview: Priority alerts, Live activity, AI insights</p>
+                                <p class="text-blue-400 text-xs mt-1">📍 This is the MAIN screen - Officer spends most time here</p>
+                            </div>
+                            <span class="text-gray-500">03-home-dashboard.html →</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="flex items-center gap-2">
+                        <div class="w-0.5 h-8 bg-red-500"></div>
+                        <span class="text-red-400 text-xs font-bold animate-pulse">⚡ NEW COMPLAINT FROM NCRP!</span>
+                    </div>
+                </div>
+                
+                <!-- Step 4: New Alert Popup -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0 animate-pulse">4</div>
+                    <a href="04-new-complaint-alert.html" class="flex-1 bg-gradient-to-r from-red-600/30 to-orange-600/30 border border-red-500 rounded-xl p-4 hover:bg-red-600/40 transition cursor-pointer block">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">🚨 New Complaint Alert (Popup)</p>
+                                <p class="text-gray-300 text-sm">NCRP complaint received → AI analyzed → Shows prediction</p>
+                                <p class="text-red-400 text-xs mt-1">Popup appears with predicted withdrawal location + mule accounts</p>
+                            </div>
+                            <span class="text-red-400">04-new-complaint-alert.html →</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="w-0.5 h-8 bg-blue-500"></div>
+                </div>
+                
+                <!-- Step 5: Case Detail -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">5</div>
+                    <a href="06-case-detail.html" class="flex-1 bg-blue-600/30 border border-blue-500 rounded-xl p-4 hover:bg-blue-600/40 transition cursor-pointer block">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">Case Detail Screen</p>
+                                <p class="text-gray-300 text-sm">Full case info: Countdown timer, Predicted ATM location, AI confidence</p>
+                                <p class="text-blue-400 text-xs mt-1">Officer clicks "Take Action" → Comes here to see full details</p>
+                            </div>
+                            <span class="text-blue-400">06-case-detail.html →</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="w-0.5 h-8 bg-orange-500"></div>
+                </div>
+                
+                <!-- Step 6: Money Trail / Mule Accounts -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">6</div>
+                    <div class="flex-1 grid grid-cols-2 gap-4">
+                        <a href="07-money-trail.html" class="bg-slate-700 rounded-xl p-4 hover:bg-slate-600 transition cursor-pointer block">
+                            <p class="text-white font-bold">Money Trail</p>
+                            <p class="text-gray-400 text-sm">See how money flowed through accounts</p>
+                            <span class="text-gray-500 text-xs">07-money-trail.html →</span>
+                        </a>
+                        <a href="08-mule-accounts.html" class="bg-orange-600/30 border border-orange-500 rounded-xl p-4 hover:bg-orange-600/40 transition cursor-pointer block">
+                            <p class="text-white font-bold">Mule Accounts</p>
+                            <p class="text-orange-300 text-sm">List of identified mule accounts</p>
+                            <span class="text-orange-400 text-xs">08-mule-accounts.html →</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-0.5 h-4 bg-green-500"></div>
+                        <span class="text-green-400 text-xs font-bold px-3 py-1 bg-green-500/20 rounded-full my-2">⭐ KEY STEP: ALERT NEARBY TEAMS</span>
+                        <div class="w-0.5 h-4 bg-green-500"></div>
+                    </div>
+                </div>
+                
+                <!-- Step 7: ALERT NEARBY POLICE/LEA TEAMS - NEW STEP! -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">7</div>
+                    <div class="flex-1 bg-gradient-to-r from-green-600/30 to-emerald-600/30 border-2 border-green-500 rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-green-400 font-bold text-lg">📍 Alert Nearby Police Stations / LEA Teams</p>
+                                <p class="text-gray-300 text-sm">AEGIS identifies police stations & teams near predicted withdrawal location</p>
+                                <div class="mt-2 flex gap-2">
+                                    <a href="10-map-view.html" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition">
+                                        View on Map →
+                                    </a>
+                                    <a href="18-team-status.html" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 text-white text-sm rounded-lg transition">
+                                        Team Status →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 bg-green-900/30 rounded-lg p-3">
+                            <p class="text-green-300 text-sm font-medium mb-2">What happens here:</p>
+                            <ul class="text-green-200 text-xs space-y-1">
+                                <li>• AEGIS shows predicted ATM on map with risk zone</li>
+                                <li>• <span class="text-yellow-300 font-bold">Nearby LEA teams are automatically alerted</span></li>
+                                <li>• Teams see: Predicted location, ETA to reach, Suspect description</li>
+                                <li>• Officer can deploy additional teams if needed</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="w-0.5 h-8 bg-red-600"></div>
+                </div>
+                
+                <!-- Step 8: FREEZE ACTION -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">8</div>
+                    <a href="09-freeze-confirmation.html" class="flex-1 bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-4 hover:scale-105 transition cursor-pointer block shadow-lg shadow-red-500/30">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">⚡ FREEZE ACCOUNTS via NPCI</p>
+                                <p class="text-white/80 text-sm">Officer clicks "Freeze" → NPCI freezes mule accounts in <span class="text-yellow-300 font-bold">47 seconds!</span></p>
+                                <p class="text-yellow-300 text-xs mt-1">⭐ Core feature: Prevents money from being withdrawn</p>
+                            </div>
+                            <span class="text-white/70">09-freeze-confirmation.html →</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="w-0.5 h-8 bg-slate-500"></div>
+                </div>
+                
+                <!-- Step 9: Outcome -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">9</div>
+                    <a href="11-outcome-feedback.html" class="flex-1 bg-slate-700 rounded-xl p-4 hover:bg-slate-600 transition cursor-pointer block">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">Record Outcome</p>
+                                <p class="text-gray-400 text-sm">Was prediction correct? Money recovered? Suspect caught?</p>
+                                <p class="text-cyan-400 text-xs mt-1">This feedback trains the AI model to improve future predictions</p>
+                            </div>
+                            <span class="text-gray-500">11-outcome-feedback.html →</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="flex justify-center">
+                    <div class="w-0.5 h-8 bg-green-500"></div>
+                </div>
+                
+                <!-- Step 10: Success -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">10</div>
+                    <a href="12-case-success.html" class="flex-1 bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-4 hover:scale-105 transition cursor-pointer block shadow-lg shadow-green-500/30">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">🎉 Case Resolved!</p>
+                                <p class="text-white/80 text-sm">Shows: Money recovered, Response time, Prediction accuracy</p>
+                                <p class="text-white/60 text-xs mt-1">Officer returns to dashboard → Ready for next case!</p>
+                            </div>
+                            <span class="text-white/70">12-case-success.html →</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WHERE DO COMPLAINTS COME FROM? -->
+        <div class="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border border-purple-500/30 rounded-3xl p-8 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">📥 Where Do Complaints Come From?</h2>
+            
+            <div class="flex items-center justify-center gap-4 flex-wrap">
+                <a href="15-ncrp-portal.html" class="bg-purple-600 rounded-xl p-4 text-center hover:scale-105 transition cursor-pointer">
+                    <p class="text-3xl mb-2">🏛️</p>
+                    <p class="text-white font-bold">NCRP Portal</p>
+                    <p class="text-purple-200 text-xs">Victim reports here</p>
+                    <p class="text-purple-300 text-xs mt-1">15-ncrp-portal.html →</p>
+                </a>
+                
+                <div class="text-purple-400 text-2xl">→</div>
+                
+                <div class="bg-slate-800 rounded-xl p-4 text-center">
+                    <p class="text-3xl mb-2">🤖</p>
+                    <p class="text-white font-bold">AEGIS AI</p>
+                    <p class="text-gray-400 text-xs">Analyzes complaint</p>
+                    <p class="text-cyan-400 text-xs">Predicts withdrawal location</p>
+                </div>
+                
+                <div class="text-purple-400 text-2xl">→</div>
+                
+                <div class="bg-green-600/30 border border-green-500 rounded-xl p-4 text-center">
+                    <p class="text-3xl mb-2">📍</p>
+                    <p class="text-green-400 font-bold">Finds Nearby Teams</p>
+                    <p class="text-green-200 text-xs">Police near predicted ATM</p>
+                </div>
+                
+                <div class="text-purple-400 text-2xl">→</div>
+                
+                <a href="04-new-complaint-alert.html" class="bg-red-600 rounded-xl p-4 text-center hover:scale-105 transition cursor-pointer">
+                    <p class="text-3xl mb-2">🚨</p>
+                    <p class="text-white font-bold">Alert Officers</p>
+                    <p class="text-red-200 text-xs">Push notification</p>
+                    <p class="text-red-300 text-xs mt-1">04-new-complaint-alert.html →</p>
+                </a>
+            </div>
+        </div>
+        
+        <!-- NEARBY LOCATION ALERT EXPLANATION -->
+        <div class="bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-3xl p-8 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">📍 How Nearby Location Alerting Works</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800/50 rounded-xl p-5">
+                    <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mb-3">
+                        <span class="text-white text-2xl">1️⃣</span>
+                    </div>
+                    <h3 class="text-white font-bold mb-2">AI Predicts ATM Location</h3>
+                    <p class="text-gray-400 text-sm">Based on mule account analysis, transaction patterns, and historical data, AEGIS predicts which ATM the fraudster is likely to use for withdrawal.</p>
+                </div>
+                
+                <div class="bg-slate-800/50 rounded-xl p-5">
+                    <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-3">
+                        <span class="text-white text-2xl">2️⃣</span>
+                    </div>
+                    <h3 class="text-white font-bold mb-2">Find Nearby Police/Teams</h3>
+                    <p class="text-gray-400 text-sm">AEGIS automatically identifies:</p>
+                    <ul class="text-green-300 text-sm mt-2 space-y-1">
+                        <li>• Police stations within 5km radius</li>
+                        <li>• Available LEA teams in the area</li>
+                        <li>• Patrol units near the location</li>
+                        <li>• Response time estimates (ETA)</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-slate-800/50 rounded-xl p-5">
+                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-3">
+                        <span class="text-white text-2xl">3️⃣</span>
+                    </div>
+                    <h3 class="text-white font-bold mb-2">Alert & Deploy</h3>
+                    <p class="text-gray-400 text-sm">Nearby teams receive:</p>
+                    <ul class="text-blue-300 text-sm mt-2 space-y-1">
+                        <li>• Predicted ATM location on map</li>
+                        <li>• Estimated withdrawal time window</li>
+                        <li>• Mule account holder details</li>
+                        <li>• Navigation to location</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-center gap-4">
+                <a href="10-map-view.html" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition flex items-center gap-2">
+                    <span>🗺️</span>
+                    <span>View Map Screen</span>
+                </a>
+                <a href="18-team-status.html" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition flex items-center gap-2">
+                    <span>👥</span>
+                    <span>View Team Status</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- OTHER SCREENS (Navigation Tabs) -->
+        <div class="bg-slate-800 rounded-3xl p-8 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">🔀 Other Screens (Accessible via Bottom Tabs)</h2>
+            
+            <p class="text-gray-400 text-center mb-6">These screens are accessible from the bottom navigation bar on any screen</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="05-alert-list.html" class="bg-slate-700 rounded-xl p-4 text-center hover:bg-slate-600 transition cursor-pointer">
+                    <p class="text-2xl mb-2">🔔</p>
+                    <p class="text-white font-bold">Alert List</p>
+                    <p class="text-gray-400 text-xs">All active alerts</p>
+                    <p class="text-gray-500 text-xs mt-2">05-alert-list.html</p>
+                </a>
+                
+                <a href="10-map-view.html" class="bg-green-600/30 border border-green-500 rounded-xl p-4 text-center hover:bg-green-600/40 transition cursor-pointer">
+                    <p class="text-2xl mb-2">🗺️</p>
+                    <p class="text-white font-bold">Map View</p>
+                    <p class="text-green-300 text-xs">Hotspots + Nearby Teams</p>
+                    <p class="text-green-400 text-xs mt-2">10-map-view.html</p>
+                </a>
+                
+                <a href="13-statistics.html" class="bg-slate-700 rounded-xl p-4 text-center hover:bg-slate-600 transition cursor-pointer">
+                    <p class="text-2xl mb-2">📊</p>
+                    <p class="text-white font-bold">Statistics</p>
+                    <p class="text-gray-400 text-xs">Performance metrics</p>
+                    <p class="text-gray-500 text-xs mt-2">13-statistics.html</p>
+                </a>
+                
+                <a href="16-profile.html" class="bg-slate-700 rounded-xl p-4 text-center hover:bg-slate-600 transition cursor-pointer">
+                    <p class="text-2xl mb-2">👤</p>
+                    <p class="text-white font-bold">Profile</p>
+                    <p class="text-gray-400 text-xs">Officer settings</p>
+                    <p class="text-gray-500 text-xs mt-2">16-profile.html</p>
+                </a>
+            </div>
+        </div>
+        
+        <!-- ADDITIONAL/DETAIL SCREENS -->
+        <div class="bg-slate-800 rounded-3xl p-8 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">📋 Detail/Supporting Screens</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <a href="14-suspect-network.html" class="bg-slate-700 rounded-xl p-4 text-center hover:bg-slate-600 transition cursor-pointer">
+                    <p class="text-2xl mb-2">🕸️</p>
+                    <p class="text-white font-bold">Suspect Network</p>
+                    <p class="text-gray-400 text-xs">Mule network graph</p>
+                </a>
+                
+                <a href="17-notifications.html" class="bg-slate-700 rounded-xl p-4 text-center hover:bg-slate-600 transition cursor-pointer">
+                    <p class="text-2xl mb-2">🔔</p>
+                    <p class="text-white font-bold">Notifications</p>
+                    <p class="text-gray-400 text-xs">All system alerts</p>
+                </a>
+                
+                <a href="18-team-status.html" class="bg-green-600/30 border border-green-500 rounded-xl p-4 text-center hover:bg-green-600/40 transition cursor-pointer">
+                    <p class="text-2xl mb-2">👥</p>
+                    <p class="text-green-400 font-bold">Team Status</p>
+                    <p class="text-green-300 text-xs">Deployed nearby teams</p>
+                </a>
+                
+                <a href="19-single-freeze.html" class="bg-slate-700 rounded-xl p-4 text-center hover:bg-slate-600 transition cursor-pointer">
+                    <p class="text-2xl mb-2">❄️</p>
+                    <p class="text-white font-bold">Single Freeze</p>
+                    <p class="text-gray-400 text-xs">Freeze one account</p>
+                </a>
+                
+                <a href="20-ai-analysis.html" class="bg-slate-700 rounded-xl p-4 text-center hover:bg-slate-600 transition cursor-pointer">
+                    <p class="text-2xl mb-2">🧠</p>
+                    <p class="text-white font-bold">AI Analysis</p>
+                    <p class="text-gray-400 text-xs">Full prediction details</p>
+                </a>
+            </div>
+        </div>
+        
+        <!-- SIMPLE TEXT FLOW -->
+        <div class="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 border border-blue-500/30 rounded-3xl p-8">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">📝 Simple Explanation for Judges</h2>
+            
+            <div class="bg-slate-900 rounded-xl p-6 text-gray-300 leading-relaxed">
+                <p class="mb-4"><span class="text-cyan-400 font-bold">Step 1:</span> Officer opens AEGIS app → Sees <span class="text-white font-semibold">Splash Screen</span> (loading)</p>
+                
+                <p class="mb-4"><span class="text-cyan-400 font-bold">Step 2:</span> App shows <span class="text-white font-semibold">Login Screen</span> → Officer enters Badge ID & password</p>
+                
+                <p class="mb-4"><span class="text-cyan-400 font-bold">Step 3:</span> After login → <span class="text-white font-semibold">Home Dashboard</span> shows today's stats, active cases, AI predictions</p>
+                
+                <p class="mb-4"><span class="text-red-400 font-bold">Step 4:</span> <span class="text-red-400">🚨 NEW COMPLAINT!</span> A victim reports fraud on NCRP portal → AEGIS AI analyzes complaint + bank transaction data → <span class="text-white font-semibold">Push notification</span> appears with predicted withdrawal location</p>
+                
+                <p class="mb-4"><span class="text-cyan-400 font-bold">Step 5:</span> Officer taps notification → Opens <span class="text-white font-semibold">Case Detail</span> → Sees countdown timer, predicted ATM, mule accounts</p>
+                
+                <p class="mb-4"><span class="text-cyan-400 font-bold">Step 6:</span> Officer reviews <span class="text-white font-semibold">Money Trail</span> (how money moved) and <span class="text-white font-semibold">Mule Accounts</span> (which accounts to freeze)</p>
+                
+                <p class="mb-4"><span class="text-green-400 font-bold">Step 7:</span> <span class="text-green-400 font-bold">⭐ ALERT NEARBY TEAMS!</span> AEGIS identifies police stations & LEA teams near the predicted ATM → <span class="text-yellow-300">Alerts are sent automatically</span> → Teams see location on map with ETA</p>
+                
+                <p class="mb-4"><span class="text-red-400 font-bold">Step 8:</span> Officer clicks <span class="text-red-400 font-bold">"FREEZE ACCOUNTS"</span> → AEGIS sends request to NPCI → Mule accounts frozen in <span class="text-yellow-400 font-bold">47 seconds!</span></p>
+                
+                <p class="mb-4"><span class="text-cyan-400 font-bold">Step 9:</span> After intervention → Officer fills <span class="text-white font-semibold">Outcome Feedback</span> (was prediction correct? money recovered?)</p>
+                
+                <p><span class="text-green-400 font-bold">Step 10:</span> <span class="text-green-400">🎉 Case Resolved!</span> → Shows stats → Officer returns to dashboard → Ready for next case!</p>
+            </div>
+        </div>
+        
+        <!-- All Files List -->
+        <div class="mt-8 bg-slate-800 rounded-2xl p-6">
+            <h2 class="text-white font-bold text-xl mb-4">📁 All Screen Files</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <a href="01-splash.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">01-splash.html</a>
+                <a href="02-login.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">02-login.html</a>
+                <a href="03-home-dashboard.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">03-home-dashboard.html</a>
+                <a href="04-new-complaint-alert.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">04-new-complaint-alert.html</a>
+                <a href="05-alert-list.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">05-alert-list.html</a>
+                <a href="06-case-detail.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">06-case-detail.html</a>
+                <a href="07-money-trail.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">07-money-trail.html</a>
+                <a href="08-mule-accounts.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">08-mule-accounts.html</a>
+                <a href="09-freeze-confirmation.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">09-freeze-confirmation.html</a>
+                <a href="10-map-view.html" class="bg-green-700 hover:bg-green-600 rounded-lg p-2 text-white">10-map-view.html ⭐</a>
+                <a href="11-outcome-feedback.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">11-outcome-feedback.html</a>
+                <a href="12-case-success.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">12-case-success.html</a>
+                <a href="13-statistics.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">13-statistics.html</a>
+                <a href="14-suspect-network.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">14-suspect-network.html</a>
+                <a href="15-ncrp-portal.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">15-ncrp-portal.html</a>
+                <a href="16-profile.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">16-profile.html</a>
+                <a href="17-notifications.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">17-notifications.html</a>
+                <a href="18-team-status.html" class="bg-green-700 hover:bg-green-600 rounded-lg p-2 text-white">18-team-status.html ⭐</a>
+                <a href="19-single-freeze.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">19-single-freeze.html</a>
+                <a href="20-ai-analysis.html" class="bg-slate-700 hover:bg-slate-600 rounded-lg p-2 text-gray-300">20-ai-analysis.html</a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-8 text-center text-gray-500 text-sm">
+            <p>AEGIS MVP Design - SIH 2025 | Problem Statement ID: 25257</p>
+        </div>
+    </div>
+</body>
+</html>

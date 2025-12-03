@@ -1,0 +1,72 @@
+# ===========================================
+# AEGIS Project - Git Ignore Configuration
+# Only push mvp-design folder to repository
+# ===========================================
+
+# Ignore everything by default
+/*
+
+# But allow mvp-design folder
+!mvp-design/
+!mvp-design/**
+
+# Allow .gitignore itself
+!.gitignore
+
+# Allow README if you create one
+!README.md
+
+# ===========================================
+# Explicitly ignored files and folders
+# ===========================================
+
+# Zip files
+*.zip
+Design.zip
+
+# Text files (questions, notes)
+questions.txt
+*.txt
+
+# Design folders (original designs)
+Design/
+design/
+
+# Literature Survey folder
+Literature survey/
+Literature_survey/
+LiteratureSurvey/
+
+# ===========================================
+# Common ignores
+# ===========================================
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE/Editor folders
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node modules (if any)
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
