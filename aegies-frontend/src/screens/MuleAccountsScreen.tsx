@@ -51,7 +51,14 @@ export default function MuleAccountsScreen() {
 
   const activeAccounts = muleAccounts.filter((acc) => acc.status === 'active');
 
-  // Load mule accounts from backend when component mounts
+  // Helper to check if ID is valid UUID (required for freeze API)
+  const isValidUUID = (str: string): boolean => {
+    if (!str) return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
+
+  // Load mule accounts from backend - ALWAYS fetch from API to get correct UUIDs for freeze
   useEffect(() => {
     const loadMuleAccounts = async () => {
       if (!caseId) {
@@ -61,46 +68,25 @@ export default function MuleAccountsScreen() {
 
       try {
         setLoading(true);
+        console.log('🔄 Loading mule accounts from API for case:', caseId);
         
-        // PRIORITY 1: Use mule accounts passed from CaseDetailScreen (if available)
-        // This ensures data consistency between screens
-        if (routeAccounts && Array.isArray(routeAccounts) && routeAccounts.length > 0) {
-          console.log('✅ Using mule accounts passed from CaseDetailScreen:', routeAccounts.length, 'accounts');
-          console.log('📊 Route accounts data:', JSON.stringify(routeAccounts, null, 2));
-          // Ensure all required fields are present
-          const accounts: MuleAccount[] = routeAccounts.map((acc: any) => {
-            const mapped = {
-              id: acc.id || `acc-${Math.random()}`,
-              bank: acc.bank || 'Unknown',
-              bankName: acc.bankName || acc.bank || 'Unknown Bank',
-              accountNumber: acc.accountNumber || 'N/A',
-              amountReceived: acc.amountReceived || acc.amount || 0,
-              currentBalance: acc.currentBalance || 0,
-              accountHolder: acc.accountHolder || 'Unknown',
-              ifscCode: acc.ifscCode || 'XXXX0000000',
-              accountAge: acc.accountAge || 'Unknown',
-              location: acc.location || 'Unknown',
-              status: (acc.status || 'active') as 'active' | 'withdrawn' | 'frozen', // Preserve status from CaseDetailScreen
-              muleConfidence: acc.muleConfidence ?? acc.mule_confidence ?? acc.muleProbability,
-              riskIndicators: acc.riskIndicators || acc.risk_indicators || [],
-              hopNumber: acc.hopNumber ?? acc.hop_number,
-            };
-            console.log(`  → Account ${mapped.id}: ${mapped.bank} - ${mapped.accountNumber} - Status: ${mapped.status}`);
-            return mapped;
-          });
-          setMuleAccounts(accounts);
-          // Continue to fetch live mule accounts from API for latest status/risk indicators
-        }
-        
-        console.log('⚠️ No route accounts passed, loading from API...');
-        
-        // PRIORITY 2: Try to get mule accounts from dedicated endpoint
+        // ALWAYS load from API first to get correct UUIDs (required for freeze operations)
         const muleResult = await caseService.getCaseMuleAccounts(caseId);
         if (muleResult.success && muleResult.data?.mule_accounts && muleResult.data.mule_accounts.length > 0) {
-          console.log('Loaded mule accounts from API:', muleResult.data.mule_accounts);
-          // Use shared utility to transform API response
+          console.log('✅ Loaded mule accounts from API:', muleResult.data.mule_accounts.length, 'accounts');
+          
+          // Check which accounts are already frozen
+          const frozenIds = new Set<string>();
+          
           const accounts: MuleAccount[] = muleResult.data.mule_accounts.map((acc: any) => {
             const transformed = transformApiMuleAccount(acc);
+            console.log(`  → Account ${transformed.id}: ${transformed.bank} - ${transformed.accountNumber} - Status: ${transformed.status}`);
+            
+            // Track frozen accounts
+            if (transformed.status === 'frozen') {
+              frozenIds.add(transformed.id);
+            }
+            
             return {
               id: transformed.id,
               bank: transformed.bank,
@@ -118,51 +104,98 @@ export default function MuleAccountsScreen() {
               hopNumber: transformed.hopNumber,
             };
           });
+          
           setMuleAccounts(accounts);
-          return; // Successfully loaded, exit early
-        }
-        
-        // Fallback: Extract mule accounts from transactions (from CFCFRMS flow)
-        console.log('Mule accounts endpoint returned no data, extracting from transactions...');
-        const transactionsResult = await caseService.getCaseTransactions(caseId);
-        if (transactionsResult.success && transactionsResult.data?.transactions && transactionsResult.data.transactions.length > 0) {
-          // Use shared utility to extract mule accounts consistently
-          const extractedAccounts = extractMuleAccountsFromTransactions(
-            transactionsResult.data.transactions,
-            true // Skip victim account
-          );
+          setFrozenAccounts(frozenIds);
           
-          // Transform to MuleAccount format
-          const accounts: MuleAccount[] = extractedAccounts.map(acc => ({
-            id: acc.id,
-            bank: acc.bank,
-            bankName: acc.bankName,
-            accountNumber: acc.accountNumber,
-            amountReceived: acc.amountReceived,
-            currentBalance: acc.currentBalance,
-            accountHolder: acc.accountHolder,
-            ifscCode: acc.ifscCode,
-            accountAge: acc.accountAge,
-            location: acc.location,
-            status: acc.status,
-          muleConfidence: acc.muleConfidence,
-          riskIndicators: acc.riskIndicators,
-          hopNumber: acc.hopNumber,
-          }));
-          
-          if (accounts.length > 0) {
-            console.log('Extracted mule accounts from transactions:', accounts);
-            setMuleAccounts(accounts);
-            return; // Successfully extracted, exit early
+          // Log frozen status
+          console.log(`📊 Freeze Status: ${frozenIds.size}/${accounts.length} accounts frozen`);
+          if (frozenIds.size === accounts.length && accounts.length > 0) {
+            console.log('✅ All mule accounts are frozen - user can proceed to next step');
           }
+          
+          setLoading(false);
+          return;
         }
         
-        // Only use default accounts if no data found at all
-        console.warn('No mule accounts found from API or transactions, using empty list');
+        // Fallback: Use route accounts only if they have valid UUIDs
+        if (routeAccounts && Array.isArray(routeAccounts) && routeAccounts.length > 0) {
+          const hasValidUUIDs = routeAccounts.every((acc: any) => isValidUUID(acc.id));
+          if (hasValidUUIDs) {
+            console.log('✅ Using route accounts with valid UUIDs:', routeAccounts.length);
+            const accounts: MuleAccount[] = routeAccounts.map((acc: any) => ({
+              id: acc.id,
+              bank: acc.bank || 'Unknown',
+              bankName: acc.bankName || acc.bank || 'Unknown Bank',
+              accountNumber: acc.accountNumber || 'N/A',
+              amountReceived: acc.amountReceived || acc.amount || 0,
+              currentBalance: acc.currentBalance || 0,
+              accountHolder: acc.accountHolder || 'Unknown',
+              ifscCode: acc.ifscCode || 'XXXX0000000',
+              accountAge: acc.accountAge || 'Unknown',
+              location: acc.location || 'Unknown',
+              status: (acc.status || 'active') as 'active' | 'withdrawn' | 'frozen',
+              muleConfidence: acc.muleConfidence,
+              riskIndicators: acc.riskIndicators || [],
+              hopNumber: acc.hopNumber,
+            }));
+            setMuleAccounts(accounts);
+            setLoading(false);
+            return;
+          }
+          console.warn('⚠️ Route accounts have invalid IDs (not UUIDs), cannot use for freeze');
+        }
+        
+        // Try freeze status endpoint for accounts with UUIDs
+        console.log('📋 Trying freeze status endpoint...');
+        const freezeStatus = await caseService.getFreezeStatus(caseId);
+        if (freezeStatus.success && freezeStatus.data?.accounts && freezeStatus.data.accounts.length > 0) {
+          console.log('✅ Got accounts from freeze status:', freezeStatus.data.accounts.length);
+          
+          // Check which accounts are already frozen
+          const frozenIds = new Set<string>();
+          
+          const accounts: MuleAccount[] = freezeStatus.data.accounts.map((acc: any) => {
+            const isFrozen = acc.status === 'FROZEN';
+            if (isFrozen) {
+              frozenIds.add(acc.id);
+            }
+            
+            return {
+              id: acc.id,
+              bank: acc.bank || 'Unknown',
+              bankName: acc.bank || 'Unknown Bank',
+              accountNumber: acc.account_number ? `XXXX${String(acc.account_number).slice(-4)}` : 'N/A',
+              amountReceived: acc.amount_received || 0,
+              currentBalance: acc.current_balance || 0,
+              accountHolder: acc.holder_name || 'Unknown',
+              ifscCode: 'XXXX0000000',
+              accountAge: 'Unknown',
+              location: 'Unknown',
+              status: (isFrozen ? 'frozen' : 'active') as 'active' | 'withdrawn' | 'frozen',
+              muleConfidence: acc.mule_confidence,
+              riskIndicators: [],
+              hopNumber: acc.hop_number,
+            };
+          });
+          
+          setMuleAccounts(accounts);
+          setFrozenAccounts(frozenIds);
+          
+          // Log frozen status
+          console.log(`📊 Freeze Status: ${frozenIds.size}/${accounts.length} accounts frozen`);
+          if (frozenIds.size === accounts.length && accounts.length > 0) {
+            console.log('✅ All mule accounts are frozen - user can proceed to next step');
+          }
+          
+          setLoading(false);
+          return;
+        }
+        
+        console.warn('❌ No mule accounts found');
         setMuleAccounts([]);
       } catch (error) {
         console.error('Error loading mule accounts:', error);
-        // Don't use default accounts on error - show empty state instead
         setMuleAccounts([]);
       } finally {
         setLoading(false);
@@ -170,7 +203,7 @@ export default function MuleAccountsScreen() {
     };
 
     loadMuleAccounts();
-  }, [caseId, routeAccounts]); // Also watch routeAccounts to update when passed data changes
+  }, [caseId]); // Only depend on caseId
 
   React.useEffect(() => {
     Animated.loop(
@@ -498,7 +531,9 @@ export default function MuleAccountsScreen() {
                   style={[
                     styles.statusBadge,
                     {
-                      backgroundColor: isWithdrawn
+                      backgroundColor: isFrozen
+                        ? '#dbeafe'
+                        : isWithdrawn
                         ? '#e5e7eb'
                         : '#fef3c7',
                     },
@@ -508,13 +543,15 @@ export default function MuleAccountsScreen() {
                     style={[
                       styles.statusText,
                       {
-                        color: isWithdrawn
+                        color: isFrozen
+                          ? '#1e40af'
+                          : isWithdrawn
                           ? '#6b7280'
                           : '#d97706',
                       },
                     ]}
                   >
-                    {isWithdrawn ? 'WITHDRAWN' : 'ACTIVE'}
+                    {isFrozen ? '🔒 FROZEN' : isWithdrawn ? 'WITHDRAWN' : 'ACTIVE'}
                   </Text>
                 </View>
               </View>
@@ -598,6 +635,13 @@ export default function MuleAccountsScreen() {
                     Withdrawn at ATM Vashi • 10:52 AM
                   </Text>
                 </View>
+              ) : isFrozen ? (
+                <View style={styles.frozenInfo}>
+                  <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+                  <Text style={styles.frozenText}>
+                    Account successfully frozen via NPCI
+                  </Text>
+                </View>
               ) : (
                 <View style={styles.actionButtons}>
                   <TouchableOpacity
@@ -655,35 +699,49 @@ export default function MuleAccountsScreen() {
           </View>
         </View>
 
-        {/* Freeze All Button */}
+        {/* Freeze All Button / Continue Button */}
         <TouchableOpacity
           style={[
             styles.freezeAllBottomButton,
-            (freezing || activeAccounts.length === 0) && styles.freezeAllBottomButtonDisabled,
+            freezing && styles.freezeAllBottomButtonDisabled,
           ]}
-          onPress={handleFreezeAll}
+          onPress={activeAccounts.length === 0 ? () => {
+            // All accounts frozen - navigate to next step (Team Deployment)
+            // @ts-ignore
+            navigation.navigate('TeamDeployment' as never, { caseId } as never);
+          } : handleFreezeAll}
           activeOpacity={0.8}
-          disabled={freezing || activeAccounts.length === 0}
+          disabled={freezing}
         >
           <LinearGradient
             colors={
-              freezing || activeAccounts.length === 0
+              activeAccounts.length === 0
+                ? ['#10b981', '#059669'] // Green for success/continue
+                : freezing
                 ? ['#9ca3af', '#6b7280']
                 : ['#ef4444', '#dc2626']
             }
             style={styles.freezeAllGradient}
           >
-            <View style={styles.priorityBadge}>
-              <Text style={styles.priorityBadgeText}>⚡ PRIORITY #1</Text>
-            </View>
+            {activeAccounts.length === 0 ? (
+              <View style={styles.successBadge}>
+                <Text style={styles.successBadgeText}>✓ ALL FROZEN</Text>
+              </View>
+            ) : (
+              <View style={styles.priorityBadge}>
+                <Text style={styles.priorityBadgeText}>⚡ PRIORITY #1</Text>
+              </View>
+            )}
             {freezing ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
-              <Ionicons name="lock-closed" size={20} color="#FFFFFF" />
+              <Ionicons name={activeAccounts.length === 0 ? "arrow-forward" : "lock-closed"} size={20} color="#FFFFFF" />
             )}
             <Text style={styles.freezeAllBottomText}>
               {freezing
                 ? 'Freezing...'
+                : activeAccounts.length === 0
+                ? 'Continue to Next Step →'
                 : `Freeze All Active Accounts (${activeAccounts.length})`}
             </Text>
           </LinearGradient>
@@ -936,6 +994,39 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: '#4b5563',
+  },
+  frozenInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#d1fae5',
+    borderRadius: 8,
+    padding: 12,
+  },
+  frozenText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#065f46',
+    fontWeight: '600',
+  },
+  successBadge: {
+    position: 'absolute',
+    top: -8,
+    left: 16,
+    backgroundColor: '#d1fae5',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  successBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#065f46',
   },
   actionButtons: {
     flexDirection: 'row',

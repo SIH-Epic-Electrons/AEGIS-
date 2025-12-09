@@ -179,8 +179,11 @@ async def freeze_case_accounts(
             continue
         
         # Update account status
+        # Use timezone-aware datetime
+        from datetime import timezone
+        freeze_time = datetime.now(timezone.utc)
         account.status = MuleAccountStatus.FROZEN.value
-        account.freeze_timestamp = datetime.utcnow()
+        account.freeze_timestamp = freeze_time
         account.npci_reference = f"NPCI-{uuid.uuid4().hex[:12].upper()}"
         
         # Create FrozenAccount record for transaction blocking
@@ -189,7 +192,7 @@ async def freeze_case_accounts(
             bank_name=account.bank_name,
             case_id=case_uuid,
             freeze_request_id=freeze_req.id,
-            frozen_at=account.freeze_timestamp,
+            frozen_at=freeze_time,
             frozen_by=current_officer.id,
             case_created_at=case.created_at,
             is_active=True
@@ -212,15 +215,17 @@ async def freeze_case_accounts(
     freeze_time_ms = int((time.time() - start_time) * 1000)
     
     # Update freeze request
+    from datetime import timezone
+    now_utc = datetime.now(timezone.utc)
     freeze_req.status = FreezeStatus.COMPLETED.value
     freeze_req.npci_reference = f"FREEZE-{uuid.uuid4().hex[:8].upper()}"
     freeze_req.freeze_time_ms = freeze_time_ms
     freeze_req.total_amount_secured = total_secured
     freeze_req.accounts_frozen_count = len(frozen_accounts)
-    freeze_req.completed_at = datetime.utcnow()
+    freeze_req.completed_at = now_utc
     
     if freeze_request.freeze_type == FreezeType.TEMPORARY.value:
-        freeze_req.expires_at = datetime.utcnow() + timedelta(hours=freeze_request.duration_hours)
+        freeze_req.expires_at = now_utc + timedelta(hours=freeze_request.duration_hours)
     
     await db.commit()
     
@@ -327,10 +332,12 @@ async def freeze_single_account(
     
     # Freeze the account
     import time
+    from datetime import timezone
     start_time = time.time()
+    freeze_time_utc = datetime.now(timezone.utc)
     
     account.status = MuleAccountStatus.FROZEN.value
-    account.freeze_timestamp = datetime.utcnow()
+    account.freeze_timestamp = freeze_time_utc
     account.npci_reference = f"NPCI-{uuid.uuid4().hex[:12].upper()}"
     
     # Create FrozenAccount record for transaction blocking
@@ -339,7 +346,7 @@ async def freeze_single_account(
         bank_name=account.bank_name,
         case_id=account.case_id,
         freeze_request_id=freeze_req.id,
-        frozen_at=account.freeze_timestamp,
+        frozen_at=freeze_time_utc,
         frozen_by=current_officer.id,
         case_created_at=case.created_at if case else None,
         is_active=True
@@ -350,15 +357,16 @@ async def freeze_single_account(
     freeze_time_ms = int((time.time() - start_time) * 1000)
     
     # Update freeze request
+    now_utc = datetime.now(timezone.utc)
     freeze_req.status = FreezeStatus.COMPLETED.value
     freeze_req.npci_reference = account.npci_reference
     freeze_req.freeze_time_ms = freeze_time_ms
     freeze_req.total_amount_secured = amount_secured
     freeze_req.accounts_frozen_count = 1
-    freeze_req.completed_at = datetime.utcnow()
+    freeze_req.completed_at = now_utc
     
     if freeze_request.freeze_type == FreezeType.TEMPORARY.value:
-        freeze_req.expires_at = datetime.utcnow() + timedelta(hours=freeze_request.duration_hours)
+        freeze_req.expires_at = now_utc + timedelta(hours=freeze_request.duration_hours)
     
     await db.commit()
     

@@ -85,13 +85,22 @@ async def list_teams(
 
 @router.get("/{team_id}")
 async def get_team(
-    team_id: UUID,
+    team_id: str,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
 ):
     """Get team details"""
+    # Parse team_id as UUID
+    try:
+        team_uuid = UUID(team_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid team ID format. Must be a valid UUID."
+        )
+    
     result = await db.execute(
-        select(Team).where(Team.id == team_id)
+        select(Team).where(Team.id == team_uuid)
     )
     team = result.scalar_one_or_none()
     
@@ -122,7 +131,7 @@ async def get_team(
 
 @router.post("/{team_id}/deploy")
 async def deploy_team(
-    team_id: UUID,
+    team_id: str,
     deployment: TeamDeploymentRequest,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
@@ -137,9 +146,18 @@ async def deploy_team(
     4. Links team to case
     5. Returns deployment details with ETA
     """
+    # Parse team_id as UUID
+    try:
+        team_uuid = UUID(team_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid team ID format. Must be a valid UUID."
+        )
+    
     # Verify team exists
     result = await db.execute(
-        select(Team).where(Team.id == team_id)
+        select(Team).where(Team.id == team_uuid)
     )
     team = result.scalar_one_or_none()
     
@@ -187,13 +205,14 @@ async def deploy_team(
     
     await db.commit()
     
-    deployment_time = datetime.utcnow()
+    from datetime import timezone as tz
+    deployment_time = datetime.now(tz.utc)
     
     return {
         "success": True,
         "data": {
             "deployment_id": str(team.id),  # Use team ID as deployment ID
-            "team_id": str(team_id),
+            "team_id": str(team_uuid),
             "team_code": team.team_code,
             "team_name": team.team_name,
             "status": "DEPLOYED",
@@ -218,7 +237,7 @@ async def deploy_team(
 
 @router.post("/{team_id}/message")
 async def send_team_message(
-    team_id: UUID,
+    team_id: str,
     message_data: dict,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
@@ -231,8 +250,17 @@ async def send_team_message(
     - message: Message text
     - priority: HIGH/NORMAL/LOW
     """
+    # Parse team_id as UUID
+    try:
+        team_uuid = UUID(team_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid team ID format. Must be a valid UUID."
+        )
+    
     result = await db.execute(
-        select(Team).where(Team.id == team_id)
+        select(Team).where(Team.id == team_uuid)
     )
     team = result.scalar_one_or_none()
     

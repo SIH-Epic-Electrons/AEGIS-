@@ -1,6 +1,6 @@
 /**
- * Graph Service
- * Implements /graph/* endpoints for money trail visualization
+ * Graph Visualization Service
+ * Handles API calls for money flow graph and mule network visualization
  */
 
 import axios from 'axios';
@@ -9,7 +9,7 @@ import { secureStorage } from '../services/secureStorage';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 15000,
 });
 
 // Request interceptor
@@ -39,7 +39,7 @@ export interface VisualizationNode {
   account_number?: string;
   bank?: string;
   holder_name?: string;
-  is_mule: number; // 0 or 1
+  is_mule: number;
   mule_probability: number;
   risk_score?: number;
   node_type: 'victim' | 'mule' | 'account';
@@ -61,34 +61,24 @@ export interface VisualizationEdge {
 }
 
 export interface VisualizationGraph {
-  case_id: string;
-  case_number: string;
   nodes: VisualizationNode[];
   edges: VisualizationEdge[];
+  case_id: string;
+  case_number?: string;
 }
 
 export interface MuleNetwork {
   account_id: string;
   connected_accounts: Array<{
-    account_id: string;
+    id: string;
+    account_number: string;
     bank: string;
-    is_mule: boolean;
+    holder_name?: string;
+    mule_probability: number;
     relationship: string;
-    transaction_count: number;
-    total_amount: number;
   }>;
-  total_transactions: number;
-  total_amount: number;
-}
-
-export interface TraceResult {
-  case_id: string;
-  transactions_traced: number;
-  mule_accounts_detected: number;
-  graph: {
-    nodes: any[];
-    edges: any[];
-  };
+  total_connections: number;
+  network_risk_score: number;
 }
 
 export interface ServiceResponse<T> {
@@ -97,94 +87,75 @@ export interface ServiceResponse<T> {
   error?: string;
 }
 
-
 export const graphService = {
   /**
-   * Get Case Money Flow Graph - GET /graph/case/{case_id}
+   * Get visualization-optimized graph data for a case
    */
-  async getCaseGraph(caseId: string): Promise<ServiceResponse<VisualizationGraph>> {
-    try {
-      const response = await api.get<{ success: boolean; data: any }>(`/graph/case/${caseId}`);
-      
-      // Transform to visualization format if needed
-      const data = response.data.data || response.data;
-      
-      return {
-        success: true,
-        data: {
-          case_id: data.case_id,
-          case_number: data.case_number,
-          nodes: data.graph?.nodes || data.nodes || [],
-          edges: data.graph?.edges || data.edges || [],
-        },
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.response?.data?.detail || error.message || 'Failed to get case graph',
-      };
-    }
-  },
-
-  /**
-   * Get Case Graph for Visualization - GET /graph/case/{case_id}/visualization
-   */
-  async getCaseGraphVisualization(caseId: string): Promise<ServiceResponse<VisualizationGraph>> {
+  async getCaseVisualization(caseId: string): Promise<ServiceResponse<VisualizationGraph>> {
     try {
       const response = await api.get<{ success: boolean; data: VisualizationGraph }>(
         `/graph/case/${caseId}/visualization`
       );
-      
-      return {
-        success: true,
-        data: response.data.data || response.data,
-      };
+      return { success: true, data: response.data?.data || response.data };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.response?.data?.detail || error.message || 'Failed to get graph visualization',
+      console.error('Graph visualization error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Failed to fetch graph visualization' 
       };
     }
   },
 
   /**
-   * Trace Money Flow for Case - POST /graph/case/{case_id}/trace
+   * Get money flow graph for a case
    */
-  async traceMoneyFlow(caseId: string): Promise<ServiceResponse<TraceResult>> {
+  async getCaseGraph(caseId: string): Promise<ServiceResponse<any>> {
     try {
-      const response = await api.post<{ success: boolean; data: TraceResult }>(
+      const response = await api.get<{ success: boolean; data: any }>(
+        `/graph/case/${caseId}`
+      );
+      return { success: true, data: response.data?.data || response.data };
+    } catch (error: any) {
+      console.error('Graph API error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Failed to fetch case graph' 
+      };
+    }
+  },
+
+  /**
+   * Trace money flow for a case (triggers CFCFRMS simulation)
+   */
+  async traceMoneyFlow(caseId: string): Promise<ServiceResponse<any>> {
+    try {
+      const response = await api.post<{ success: boolean; data: any }>(
         `/graph/case/${caseId}/trace`
       );
-      
-      return {
-        success: true,
-        data: response.data.data || response.data,
-      };
+      return { success: true, data: response.data?.data || response.data };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.response?.data?.detail || error.message || 'Failed to trace money flow',
+      console.error('Graph trace error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Failed to trace money flow' 
       };
     }
   },
 
   /**
-   * Get Mule Account Network - GET /graph/mule/{account_id}/network
+   * Get mule account network
    */
   async getMuleNetwork(accountId: string): Promise<ServiceResponse<MuleNetwork>> {
     try {
-      const response = await api.get<{ success: boolean; data: MuleNetwork }>(
+      const response = await api.get<{ success: boolean; data: any }>(
         `/graph/mule/${accountId}/network`
       );
-      
-      return {
-        success: true,
-        data: response.data.data || response.data,
-      };
+      return { success: true, data: response.data?.data || response.data };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.response?.data?.detail || error.message || 'Failed to get mule network',
+      console.error('Mule network error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Failed to fetch mule network' 
       };
     }
   },

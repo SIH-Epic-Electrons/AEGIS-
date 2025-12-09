@@ -70,7 +70,7 @@ class FreezeRequest(BaseModel):
     # Requester
     requested_by: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("officers.id"),
+        ForeignKey("officers.id", ondelete="SET NULL"),
         nullable=True
     )
     
@@ -80,7 +80,10 @@ class FreezeRequest(BaseModel):
     
     # Relationships
     case: Mapped["Case"] = relationship(back_populates="freeze_requests")
-    requested_by_officer: Mapped[Optional["Officer"]] = relationship(back_populates="freeze_requests")
+    requested_by_officer: Mapped[Optional["Officer"]] = relationship(
+        foreign_keys=[requested_by],
+        back_populates="freeze_requests"
+    )
     frozen_accounts: Mapped[List["FrozenAccount"]] = relationship(back_populates="freeze_request", cascade="all, delete-orphan")
     
     def __repr__(self) -> str:

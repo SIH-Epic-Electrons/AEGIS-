@@ -102,6 +102,58 @@ async def list_atms(
     }
 
 
+@router.get("/hotspots")
+async def get_atm_hotspots(
+    current_officer: Annotated[Officer, Depends(get_current_officer)],
+    db: AsyncSession = Depends(get_db),
+    city: Optional[str] = Query(None, description="Filter by city"),
+    state: Optional[str] = Query(None, description="Filter by state"),
+    limit: int = Query(20, le=100)
+):
+    """
+    Get ATM hotspot predictions - high-risk locations for fraud cash-out.
+    
+    Returns ATMs that are frequently used for cash withdrawal in fraud cases,
+    based on historical patterns and AI predictions.
+    """
+    # Build query for high-activity ATMs
+    query = select(ATM).where(ATM.is_active == True)
+    
+    if city:
+        query = query.where(ATM.city.ilike(f"%{city}%"))
+    
+    if state:
+        query = query.where(ATM.state.ilike(f"%{state}%"))
+    
+    # In production, this would use ML model predictions
+    # For now, return ATMs as potential hotspots
+    query = query.limit(limit)
+    
+    result = await db.execute(query)
+    atms = result.scalars().all()
+    
+    return {
+        "success": True,
+        "data": [
+            {
+                "id": str(a.id),
+                "atm_id": a.atm_id,
+                "name": a.name,
+                "bank": a.bank_name,
+                "address": a.address,
+                "city": a.city,
+                "state": a.state,
+                "latitude": a.latitude,
+                "longitude": a.longitude,
+                "risk_score": 0.75,  # Mock risk score (would come from ML model)
+                "predicted_cases": 3,  # Mock prediction count
+                "is_active": a.is_active
+            }
+            for a in atms
+        ]
+    }
+
+
 @router.get("/{atm_id}")
 async def get_atm(
     atm_id: UUID,

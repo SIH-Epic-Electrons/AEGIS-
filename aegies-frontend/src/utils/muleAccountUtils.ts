@@ -92,11 +92,35 @@ export function extractMuleAccountsFromTransactions(
 }
 
 /**
+ * Check if a string is a valid UUID format
+ */
+export function isValidUUID(str: string): boolean {
+  if (!str) return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+/**
  * Transform API mule account response to consistent format
+ * IMPORTANT: The `id` field must be a UUID for freeze operations to work
  */
 export function transformApiMuleAccount(acc: any): MuleAccountFromTransaction {
+  // Prioritize UUID 'id' from API - this is REQUIRED for freeze operations
+  let accountId = acc.id;
+  
+  // Validate it's a UUID
+  if (!isValidUUID(accountId)) {
+    // Try alternative UUID fields
+    accountId = acc.uuid || acc.mule_account_id || acc.account_uuid || acc.id;
+    if (!isValidUUID(accountId)) {
+      console.warn(`⚠️ Mule account missing UUID: ${acc.account_number || 'unknown'}`);
+      // Fallback (freeze will fail with this)
+      accountId = accountId || acc.account_number || `acc-${Math.random()}`;
+    }
+  }
+  
   return {
-    id: acc.id || acc.account_number || `acc-${Math.random()}`,
+    id: accountId,
     bank: acc.bank_name || acc.bank || 'Unknown',
     bankName: acc.bank_name || acc.bank || 'Unknown Bank',
     accountNumber: acc.account_number ? `XXXX${String(acc.account_number).slice(-4)}` : 'N/A',

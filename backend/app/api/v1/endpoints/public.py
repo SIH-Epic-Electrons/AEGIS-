@@ -149,23 +149,46 @@ async def submit_ncrp_complaint(
             detail=f"Failed to create case: {str(e)}"
         )
     
-    # Trace money flow and detect mule accounts immediately (synchronous for better UX)
-    # This will store transactions and mule accounts in database
-    # Wrap in try-catch to handle missing database columns gracefully
+    # CRITICAL: Trace money flow and detect mule accounts immediately (synchronous)
+    # This MUST happen for every case to provide transaction data via CFCFRMS
+    # Even if confidence score is zero, we need transactions for investigation
     # Capture case_id as string before try block to avoid SQLAlchemy lazy loading issues
     case_id_str = str(case.id)
     trace_result = None
+    
+    logger.info(f"🔍 Starting CFCFRMS money trace for case {case_id_str} (Amount: ₹{case.fraud_amount:.2f})")
+    
     try:
-        trace_result = await trace_money_flow_and_detect_mules(db, case, victim_account=complaint.destination_account.account_number)
-        logger.info(f"Money trace result for case {case_id_str}: {trace_result}")
+        # ALWAYS trace money flow - this is critical for every case
+        trace_result = await trace_money_flow_and_detect_mules(
+            db, 
+            case, 
+            victim_account=complaint.destination_account.account_number
+        )
+        
+        if trace_result and trace_result.get("success"):
+            logger.info(
+                f"✅ Money trace completed for case {case_id_str}: "
+                f"{trace_result.get('transactions_traced', 0)} transactions, "
+                f"{trace_result.get('mule_accounts_detected', 0)} mule accounts detected"
+            )
+        else:
+            logger.warning(f"⚠️ Money trace returned unsuccessfully for case {case_id_str}: {trace_result}")
+            
     except Exception as trace_error:
         # Use case_id_str instead of case.id to avoid SQLAlchemy lazy loading issues
         error_msg = str(trace_error)
-        logger.error(f"Error tracing money flow for case {case_id_str}: {error_msg}", exc_info=False)
+        logger.error(f"❌ Error tracing money flow for case {case_id_str}: {error_msg}", exc_info=True)
+        
         # Check if it's a database column error
         error_msg_lower = error_msg.lower()
         if any(col in error_msg_lower for col in ["from_balance_before", "to_location", "split_group_id", "column", "does not exist", "undefinedcolumn"]):
-            logger.warning(f"Database migration required for case {case_id_str}. Money trace skipped.")
+            logger.error(
+                f"⚠️ Database migration required for case {case_id_str}. "
+                f"Transactions cannot be created without required columns. "
+                f"Please run: python backend/scripts/add_balance_location_columns.py && "
+                f"python backend/scripts/add_split_columns.py"
+            )
             trace_result = {
                 "success": False,
                 "error": "Database migration required. Please run migration scripts.",
@@ -175,7 +198,7 @@ async def submit_ncrp_complaint(
             # Don't fail the request - case is still created, just money trace will be done after migration
         else:
             # For other errors, log but don't fail the request
-            logger.error(f"Unexpected error in money trace: {trace_error}")
+            logger.error(f"Unexpected error in money trace: {trace_error}", exc_info=True)
             trace_result = {
                 "success": False,
                 "error": str(trace_error),
@@ -186,9 +209,22 @@ async def submit_ncrp_complaint(
     # Trigger AI analysis asynchronously (for location prediction)
     try:
         background_tasks.add_task(trigger_ai_analysis, case.id)
+        logger.info(f"🤖 AI analysis queued for case {case_id_str}")
     except Exception as ai_error:
         logger.error(f"Error queuing AI analysis for case {case.id}: {ai_error}", exc_info=True)
         # Don't fail the request if AI analysis fails - case is still created
+    
+    # Prepare response with transaction summary
+    transactions_traced = trace_result.get("transactions_traced", 0) if trace_result else 0
+    mule_accounts_detected = trace_result.get("mule_accounts_detected", 0) if trace_result else 0
+    
+    response_message = (
+        "Your complaint has been registered successfully. "
+        "LEA officers have been notified and AI analysis is in progress."
+    )
+    
+    if transactions_traced > 0:
+        response_message += f" CFCFRMS traced {transactions_traced} transaction(s) and identified {mule_accounts_detected} suspicious account(s)."
     
     return {
         "success": True,
@@ -197,10 +233,16 @@ async def submit_ncrp_complaint(
             "case_number": case.case_number,
             "status": case.status.value if hasattr(case.status, 'value') else str(case.status),
             "priority": case.priority.value if hasattr(case.priority, 'value') else str(case.priority),
-            "message": "Your complaint has been registered successfully. LEA officers have been notified and AI analysis is in progress.",
+            "message": response_message,
             "estimated_analysis_time_seconds": 30,
             "helpline": "1930",
-            "tracking_note": "Please save your Case Number for future reference."
+            "tracking_note": "Please save your Case Number for future reference.",
+            # Include transaction summary in response
+            "cfcfrms_trace": {
+                "transactions_traced": transactions_traced,
+                "mule_accounts_detected": mule_accounts_detected,
+                "trace_completed": trace_result.get("success", False) if trace_result else False
+            }
         }
     }
 

@@ -45,7 +45,7 @@ class FrozenAccount(BaseModel):
     frozen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     frozen_by: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("officers.id"),
+        ForeignKey("officers.id", ondelete="SET NULL"),
         nullable=True
     )
     
@@ -73,6 +73,18 @@ class FrozenAccount(BaseModel):
     def time_to_freeze_seconds(self) -> Optional[float]:
         """Calculate time from case creation to freeze action in seconds"""
         if self.case_created_at and self.frozen_at:
-            return (self.frozen_at - self.case_created_at).total_seconds()
+            # Handle timezone-aware/naive datetime mismatch
+            frozen_at = self.frozen_at
+            case_created_at = self.case_created_at
+            
+            # Convert both to timezone-aware if needed
+            if frozen_at.tzinfo is None and case_created_at.tzinfo is not None:
+                from datetime import timezone
+                frozen_at = frozen_at.replace(tzinfo=timezone.utc)
+            elif case_created_at.tzinfo is None and frozen_at.tzinfo is not None:
+                from datetime import timezone
+                case_created_at = case_created_at.replace(tzinfo=timezone.utc)
+            
+            return (frozen_at - case_created_at).total_seconds()
         return None
 

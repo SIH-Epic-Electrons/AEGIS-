@@ -156,7 +156,16 @@ async def analyze_case_ai(case_id: UUID, db: AsyncSession) -> dict:
                 # Update case with prediction
                 if atm:
                     case.predicted_atm_id = atm.id
-                case.location_confidence = primary.get("confidence", 0) / 100.0
+                
+                # Store confidence (even if zero, we have a prediction)
+                confidence_value = primary.get("confidence", 0) / 100.0
+                case.location_confidence = confidence_value
+                
+                # Log confidence for debugging
+                logger.info(
+                    f"ATM prediction for case {case_id}: {atm.name if atm else 'None'} "
+                    f"(Confidence: {confidence_value:.2%})"
+                )
                 
                 # Store alternative predictions as JSON (top 3, sorted by confidence)
                 alternatives = sorted_predictions[1:3] if len(sorted_predictions) > 1 else []
