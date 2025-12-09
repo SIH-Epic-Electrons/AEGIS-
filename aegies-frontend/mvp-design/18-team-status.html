@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>AEGIS - Team Status</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .pulse-ring {
+            animation: pulse-ring 1.5s ease-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex items-center justify-center min-h-screen bg-gray-900 p-4">
+        <div class="w-[375px] h-[812px] bg-slate-50 rounded-[3rem] overflow-hidden shadow-2xl relative">
+            <!-- Status Bar -->
+            <div class="flex justify-between items-center px-8 pt-4 text-gray-800 text-sm bg-white">
+                <span>9:41</span>
+                <div class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                    <svg class="w-6 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><rect x="4" y="9" width="12" height="6" rx="1"/></svg>
+                </div>
+            </div>
+            
+            <!-- Header -->
+            <div class="bg-white px-5 pt-4 pb-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="09-freeze-confirmation.html" class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition">
+                        <span class="material-symbols-outlined text-gray-700">arrow_back</span>
+                    </a>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Active Teams</h1>
+                        <p class="text-gray-500 text-xs">3 teams near predicted ATM</p>
+                    </div>
+                </div>
+                <button class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition">
+                    <span class="material-symbols-outlined text-gray-700">tune</span>
+                </button>
+            </div>
+            
+            <!-- Step Progress Banner -->
+            <div class="mx-5 mb-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-5 h-5 bg-white/30 text-white text-xs font-bold rounded-full flex items-center justify-center">✓</span>
+                            <span class="text-white/70 text-xs line-through">Freeze</span>
+                        </div>
+                        <span class="text-white/50">→</span>
+                        <div class="flex items-center gap-2">
+                            <span class="w-5 h-5 bg-white text-blue-600 text-xs font-bold rounded-full flex items-center justify-center">2</span>
+                            <span class="text-white text-xs font-bold">Alert Teams</span>
+                        </div>
+                        <span class="text-white/50">→</span>
+                        <div class="flex items-center gap-2">
+                            <span class="w-5 h-5 bg-white/30 text-white text-xs font-bold rounded-full flex items-center justify-center">3</span>
+                            <span class="text-white/70 text-xs">Intercept</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="h-[calc(100%-260px)] overflow-y-auto px-5 pt-4 pb-4 space-y-4">
+                <!-- Team 1 - On Site -->
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-2 border-green-300">
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
+                                    TB
+                                </div>
+                                <div>
+                                    <p class="text-gray-900 font-bold">Task Force Bravo</p>
+                                    <p class="text-gray-500 text-sm">Sgt. Rahul Verma</p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full flex items-center gap-1">
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                ON SITE
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="bg-gray-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Location</p>
+                                <p class="text-gray-900 font-medium text-sm">HDFC ATM, Lokhandwala</p>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Status</p>
+                                <p class="text-green-600 font-bold text-sm">Ready to intercept</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="openContactModal('Sgt. Rahul Verma', '+91 98765 43210', 'Task Force Bravo')" class="flex-1 py-2.5 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                                <span class="material-symbols-outlined text-lg">call</span>
+                                
+                            </button>
+                            <button onclick="openMessageModal('Sgt. Rahul Verma', 'Task Force Bravo')" class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                                <span class="material-symbols-outlined text-lg">message</span>
+                                
+                            </button>
+                            <button onclick="openRadioModal('Task Force Bravo', 'Channel 7')" class="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                                <span class="material-symbols-outlined text-lg">radio</span>
+                                
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team 2 - En Route -->
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-white font-bold">
+                                    U7
+                                </div>
+                                <div>
+                                    <p class="text-gray-900 font-bold">Unit 7</p>
+                                    <p class="text-gray-500 text-sm">SI Amit Patil</p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></span>
+                                EN ROUTE
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="bg-gray-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Heading to</p>
+                                <p class="text-gray-900 font-medium text-sm">ICICI ATM, Andheri</p>
+                            </div>
+                            <div class="bg-orange-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">ETA</p>
+                                <p class="text-orange-600 font-bold text-sm">8 minutes</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="mb-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Progress</span>
+                                <span>65%</span>
+                            </div>
+                            <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-orange-500 rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="openContactModal('SI Amit Patil', '+91 98765 12345', 'Unit 7')" class="flex-1 py-2.5 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                                <span class="material-symbols-outlined text-lg">call</span>
+                                
+                            </button>
+                            <button onclick="openMessageModal('SI Amit Patil', 'Unit 7')" class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                                <span class="material-symbols-outlined text-lg">message</span>
+                                
+                            </button>
+                            <button onclick="openRadioModal('Unit 7', 'Channel 5')" class="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                                <span class="material-symbols-outlined text-lg">radio</span>
+                                
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Available Teams -->
+                <p class="text-gray-500 text-xs font-semibold uppercase mt-4">Available for Deployment</p>
+                
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center text-gray-600 font-bold">
+                                U3
+                            </div>
+                            <div>
+                                <p class="text-gray-900 font-medium">Unit 3</p>
+                                <p class="text-gray-500 text-xs">Const. Deepak M. • 3.2 km away</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="openDeployModal('Unit 3', 'Const. Deepak M.', '3.2 km', '12 min')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                        <span class="material-symbols-outlined text-lg">send</span>
+                        Deploy to Predicted ATM
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center text-gray-600 font-bold">
+                                CU
+                            </div>
+                            <div>
+                                <p class="text-gray-900 font-medium">Cyber Unit</p>
+                                <p class="text-gray-500 text-xs">Tech Officer Priya S. • 5.1 km away</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="openDeployModal('Cyber Unit', 'Tech Officer Priya S.', '5.1 km', '18 min')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                        <span class="material-symbols-outlined text-lg">send</span>
+                        Deploy to Predicted ATM
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Bottom Action -->
+            <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 pb-8">
+                <!-- Next Step Info -->
+                <div class="bg-green-50 border border-green-200 rounded-xl p-3 mb-3 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-green-600">check_circle</span>
+                    <div class="flex-1">
+                        <p class="text-green-800 font-semibold text-sm">Teams Alerted! Waiting for Intercept...</p>
+                        <p class="text-green-600 text-xs">Task Force Bravo is on site at predicted ATM</p>
+                    </div>
+                </div>
+                
+                <a href="11-outcome-feedback.html" class="w-full py-3.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-green-500/30 relative">
+                    <span class="absolute -top-2 left-4 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full shadow">STEP 3</span>
+                    <span class="material-symbols-outlined text-xl">task_alt</span>
+                    <span>Proceed to Record Outcome</span>
+                </a>
+            </div>
+            
+            <!-- Contact Modal (Call) -->
+            <div id="contactModal" class="modal-overlay absolute inset-0 bg-black/50 z-50 flex items-end">
+                <div class="modal-content w-full bg-white rounded-t-3xl p-6">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                    </div>
+                    
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 relative">
+                            <div class="absolute inset-0 bg-green-200 rounded-full pulse-ring"></div>
+                            <span class="material-symbols-outlined text-green-600 text-4xl relative z-10">call</span>
+                        </div>
+                        <h3 id="modalName" class="text-xl font-bold text-gray-900">Officer Name</h3>
+                        <p id="modalTeam" class="text-gray-500 text-sm">Team Name</p>
+                    </div>
+                    
+                    <a id="modalCallBtn" href="tel:+919876543210" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition mb-3">
+                        <span class="material-symbols-outlined text-2xl">call</span>
+                        <span id="modalPhone">Call +91 98765 43210</span>
+                    </a>
+                    
+                    <button onclick="closeContactModal()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Message Modal -->
+            <div id="messageModal" class="modal-overlay absolute inset-0 bg-black/50 z-50 flex items-end">
+                <div class="modal-content w-full bg-white rounded-t-3xl p-6">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-blue-600 text-2xl">message</span>
+                        </div>
+                        <div>
+                            <h3 id="msgModalName" class="text-lg font-bold text-gray-900">Officer Name</h3>
+                            <p id="msgModalTeam" class="text-gray-500 text-sm">Team Name</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="text-gray-600 text-sm font-medium mb-2 block">Quick Messages</label>
+                        <div class="space-y-2">
+                            <button onclick="selectQuickMsg(this)" class="w-full p-3 bg-blue-50 hover:bg-blue-100 text-left rounded-xl text-sm text-gray-700 border border-blue-200 transition">
+                                🚨 Suspect approaching ATM - stay alert
+                            </button>
+                            <button onclick="selectQuickMsg(this)" class="w-full p-3 bg-blue-50 hover:bg-blue-100 text-left rounded-xl text-sm text-gray-700 border border-blue-200 transition">
+                                ✅ Accounts frozen - safe to proceed
+                            </button>
+                            <button onclick="selectQuickMsg(this)" class="w-full p-3 bg-blue-50 hover:bg-blue-100 text-left rounded-xl text-sm text-gray-700 border border-blue-200 transition">
+                                📍 Update location status
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <textarea id="customMessage" placeholder="Or type custom message..." class="w-full p-3 border border-gray-200 rounded-xl text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    
+                    <button onclick="sendMessage()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition mb-3">
+                        <span class="material-symbols-outlined text-xl">send</span>
+                        Send Message
+                    </button>
+                    
+                    <button onclick="closeMessageModal()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Radio Modal -->
+            <div id="radioModal" class="modal-overlay absolute inset-0 bg-black/50 z-50 flex items-end">
+                <div class="modal-content w-full bg-white rounded-t-3xl p-6">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                    </div>
+                    
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3 relative">
+                            <div class="absolute inset-0 bg-orange-200 rounded-full animate-ping opacity-50"></div>
+                            <span class="material-symbols-outlined text-orange-600 text-4xl relative z-10">radio</span>
+                        </div>
+                        <h3 id="radioModalTeam" class="text-xl font-bold text-gray-900">Team Name</h3>
+                        <p id="radioModalChannel" class="text-orange-600 font-medium">Channel 7</p>
+                    </div>
+                    
+                    <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-gray-700 font-medium">Radio Status</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">CONNECTED</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-orange-600">signal_cellular_alt</span>
+                            <div class="flex-1">
+                                <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-green-500 rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <span class="text-gray-600 text-sm">Strong</span>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition mb-3">
+                        <span class="material-symbols-outlined text-2xl">mic</span>
+                        Push to Talk
+                    </button>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <button class="py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                            <span class="material-symbols-outlined text-lg">volume_up</span>
+                            Listen
+                        </button>
+                        <button class="py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                            <span class="material-symbols-outlined text-lg">headphones</span>
+                            Earpiece
+                        </button>
+                    </div>
+                    
+                    <button onclick="closeRadioModal()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition">
+                        Close Radio
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Deploy Confirmation Modal -->
+            <div id="deployModal" class="modal-overlay absolute inset-0 bg-black/50 z-50 flex items-end">
+                <div class="modal-content w-full bg-white rounded-t-3xl p-6">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                    </div>
+                    
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <span class="material-symbols-outlined text-blue-600 text-4xl">directions_car</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Deploy Team?</h3>
+                        <p class="text-gray-500 text-sm">Send team to predicted ATM location</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Team</span>
+                            <span id="deployTeam" class="text-gray-900 font-medium">Unit 3</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Officer</span>
+                            <span id="deployOfficer" class="text-gray-900 font-medium">Const. Deepak M.</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Distance</span>
+                            <span id="deployDistance" class="text-gray-900 font-medium">3.2 km</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">ETA</span>
+                            <span id="deployETA" class="text-blue-600 font-bold">12 min</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-start gap-2">
+                        <span class="material-symbols-outlined text-blue-600 text-lg">info</span>
+                        <p class="text-blue-700 text-sm">Team will be alerted with case details, predicted ATM location, and suspect information.</p>
+                    </div>
+                    
+                    <button onclick="confirmDeploy()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition mb-3">
+                        <span class="material-symbols-outlined text-xl">send</span>
+                        Confirm Deployment
+                    </button>
+                    
+                    <button onclick="closeDeployModal()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Deploy Success Toast -->
+            <div id="deployToast" class="absolute top-20 left-4 right-4 bg-green-600 text-white p-4 rounded-xl shadow-lg transform -translate-y-full opacity-0 transition-all duration-300 z-50">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-2xl">check_circle</span>
+                    <div>
+                        <p class="font-bold">Team Deployed!</p>
+                        <p class="text-sm text-green-100" id="toastMessage">Unit 3 is en route to the location</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation hint -->
+    <a href="00-FLOWCHART.html" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 z-50">
+        View Flow →
+    </a>
+    
+    <script>
+        // Contact Modal (Call)
+        function openContactModal(name, phone, team) {
+            document.getElementById('modalName').textContent = name;
+            document.getElementById('modalTeam').textContent = team;
+            document.getElementById('modalPhone').textContent = 'Call ' + phone;
+            document.getElementById('modalCallBtn').href = 'tel:' + phone.replace(/\s/g, '');
+            document.getElementById('contactModal').classList.add('active');
+        }
+        
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.remove('active');
+        }
+        
+        // Message Modal
+        function openMessageModal(name, team) {
+            document.getElementById('msgModalName').textContent = name;
+            document.getElementById('msgModalTeam').textContent = team;
+            document.getElementById('customMessage').value = '';
+            document.getElementById('messageModal').classList.add('active');
+        }
+        
+        function closeMessageModal() {
+            document.getElementById('messageModal').classList.remove('active');
+        }
+        
+        function selectQuickMsg(btn) {
+            document.getElementById('customMessage').value = btn.textContent.trim();
+        }
+        
+        function sendMessage() {
+            closeMessageModal();
+            showToast('Message sent successfully!');
+        }
+        
+        // Radio Modal
+        function openRadioModal(team, channel) {
+            document.getElementById('radioModalTeam').textContent = team;
+            document.getElementById('radioModalChannel').textContent = channel;
+            document.getElementById('radioModal').classList.add('active');
+        }
+        
+        function closeRadioModal() {
+            document.getElementById('radioModal').classList.remove('active');
+        }
+        
+        // Deploy Modal
+        function openDeployModal(team, officer, distance, eta) {
+            document.getElementById('deployTeam').textContent = team;
+            document.getElementById('deployOfficer').textContent = officer;
+            document.getElementById('deployDistance').textContent = distance;
+            document.getElementById('deployETA').textContent = eta;
+            document.getElementById('deployModal').classList.add('active');
+        }
+        
+        function closeDeployModal() {
+            document.getElementById('deployModal').classList.remove('active');
+        }
+        
+        function confirmDeploy() {
+            const team = document.getElementById('deployTeam').textContent;
+            closeDeployModal();
+            document.getElementById('toastMessage').textContent = team + ' is en route to the location';
+            showToast();
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('deployToast');
+            if (message) {
+                document.getElementById('toastMessage').textContent = message;
+            }
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-100%)';
+                toast.style.opacity = '0';
+            }, 3000);
+        }
+        
+        // Close modals on backdrop click
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NCRP Portal - Cybercrime Reporting</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation hint -->
+    <div class="fixed top-4 left-4 z-50 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+        📥 Data Source: NCRP → AEGIS
+    </div>
+    <a href="00-FLOWCHART.html" class="fixed top-4 right-4 z-50 bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg hover:bg-gray-700">
+        ← Back to Flow
+    </a>
+    
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="w-[900px] bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Government Header -->
+            <div class="bg-gradient-to-r from-blue-900 to-blue-800 p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                            <span class="text-3xl">🇮🇳</span>
+                        </div>
+                        <div>
+                            <h1 class="text-white font-bold text-xl">National Cyber Crime Reporting Portal</h1>
+                            <p class="text-blue-200 text-sm">Ministry of Home Affairs, Government of India</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-blue-200 text-xs">Portal ID: NCRP-2025</p>
+                        <p class="text-white text-sm font-medium">cybercrime.gov.in</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sub Header -->
+            <div class="bg-orange-500 text-white py-2 px-4 flex items-center justify-between">
+                <p class="text-sm font-medium">Report Financial Fraud | साइबर अपराध की शिकायत दर्ज करें</p>
+                <p class="text-sm">Helpline: 1930</p>
+            </div>
+            
+            <!-- Form Content -->
+            <div class="p-8">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+                    <span class="material-symbols-outlined text-yellow-600 text-2xl">info</span>
+                    <div>
+                        <p class="text-yellow-800 font-semibold">Report within Golden Hour for maximum recovery!</p>
+                        <p class="text-yellow-700 text-sm">Complaints reported within 1-2 hours have highest chance of fund recovery.</p>
+                    </div>
+                </div>
+                
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Financial Fraud Complaint Form</h2>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Left Column -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Complainant Name *</label>
+                            <input type="text" value="Rajesh Kumar Gupta" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
+                            <input type="text" value="+91 98765 43210" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                                <option selected>Maharashtra</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">District *</label>
+                            <input type="text" value="Mumbai Suburban" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Type of Fraud *</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                                <option selected>UPI/OTP Fraud (Vishing)</option>
+                                <option>Investment/Trading Fraud</option>
+                                <option>Job Fraud</option>
+                                <option>Loan App Fraud</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Amount Lost (₹) *</label>
+                            <input type="text" value="3,50,000" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-red-50 text-red-700 font-bold"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date & Time of Fraud *</label>
+                            <input type="text" value="03 Dec 2025, 10:22 AM" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Your Bank Name *</label>
+                            <input type="text" value="ICICI Bank" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Beneficiary Account Number *</label>
+                            <input type="text" value="XXXX XXXX 4521" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-orange-50 border-orange-300"/>
+                            <p class="text-orange-600 text-xs mt-1">← This is the mule account that received your money</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Transaction ID / UTR *</label>
+                            <input type="text" value="UTR123456789012" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Brief Description of Fraud *</label>
+                    <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 h-24">Received call from person claiming to be SBI customer care. Said my card was blocked and asked for OTP. After sharing OTP, ₹3,50,000 was debited from my account.</textarea>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="mt-8 flex items-center justify-between">
+                    <a href="04-new-complaint-alert.html" class="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2">
+                        <span>Submit Complaint</span>
+                        <span class="material-symbols-outlined">send</span>
+                    </a>
+                    <div class="text-right">
+                        <p class="text-gray-500 text-sm">After submission:</p>
+                        <p class="text-blue-600 font-medium">Data sent to AEGIS for AI analysis →</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Flow Indicator -->
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-600 p-4">
+                <div class="flex items-center justify-center gap-4 text-white">
+                    <div class="text-center">
+                        <p class="text-2xl">📝</p>
+                        <p class="text-xs">Victim Reports</p>
+                    </div>
+                    <span class="text-2xl">→</span>
+                    <div class="text-center">
+                        <p class="text-2xl">🤖</p>
+                        <p class="text-xs">AEGIS Analyzes</p>
+                    </div>
+                    <span class="text-2xl">→</span>
+                    <div class="text-center">
+                        <p class="text-2xl">📍</p>
+                        <p class="text-xs">Predicts Location</p>
+                    </div>
+                    <span class="text-2xl">→</span>
+                    <div class="text-center">
+                        <p class="text-2xl">🚨</p>
+                        <p class="text-xs">Alerts LEA</p>
+                    </div>
+                    <span class="text-2xl">→</span>
+                    <div class="text-center">
+                        <p class="text-2xl">❄️</p>
+                        <p class="text-xs">Freeze Account</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

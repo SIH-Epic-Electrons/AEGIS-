@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>AEGIS - Mule Accounts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body>
+    <div class="flex items-center justify-center min-h-screen bg-gray-900 p-4">
+        <div class="w-[375px] h-[812px] bg-slate-50 rounded-[3rem] overflow-hidden shadow-2xl relative">
+            <!-- Status Bar -->
+            <div class="flex justify-between items-center px-8 pt-4 text-gray-800 text-sm bg-white">
+                <span>9:41</span>
+                <div class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                    <svg class="w-6 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><rect x="4" y="9" width="12" height="6" rx="1"/></svg>
+                </div>
+            </div>
+            
+            <!-- Header -->
+            <div class="bg-white px-5 pt-3 pb-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="06-case-detail.html" class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-gray-700">arrow_back</span>
+                    </a>
+                    <div>
+                        <p class="text-gray-900 font-bold text-lg">Mule Accounts</p>
+                        <p class="text-gray-500 text-xs">3 accounts identified</p>
+                    </div>
+                </div>
+                <a href="09-freeze-confirmation.html" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-semibold">
+                    Freeze All
+                </a>
+            </div>
+            
+            <!-- NPCI Connection Status -->
+            <div class="mx-5 mb-4 bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-xl">verified</span>
+                </div>
+                <div class="flex-1">
+                    <p class="text-green-800 font-semibold text-sm">Connected to NPCI</p>
+                    <p class="text-green-600 text-xs">Real-time freeze capability enabled</p>
+                </div>
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
+            
+            <!-- Account List -->
+            <div class="h-[calc(100%-280px)] overflow-y-auto px-5 pb-24 space-y-4">
+                <!-- Account 1 -->
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-4">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">SBI</div>
+                                <div>
+                                    <p class="text-gray-900 font-bold">State Bank of India</p>
+                                    <p class="text-gray-500 text-sm">XXXX XXXX 4521</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">ACTIVE</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="bg-gray-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Amount Received</p>
+                                <p class="text-gray-900 font-bold">₹2,10,000</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Current Balance</p>
+                                <p class="text-orange-600 font-bold">₹2,08,500</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm mb-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Account Holder</span>
+                                <span class="text-gray-900 font-medium">Suresh K***r</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">IFSC Code</span>
+                                <span class="text-gray-900 font-medium">SBIN0001234</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Account Age</span>
+                                <span class="text-red-600 font-medium">23 days (New)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Location</span>
+                                <span class="text-gray-900 font-medium">Andheri, Mumbai</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <a href="19-single-freeze.html" class="flex-1 py-2.5 bg-red-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-lg">block</span>
+                                Freeze Account
+                            </a>
+                            <a href="19-single-freeze.html" class="w-12 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-gray-600">credit_card_off</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account 2 -->
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-4">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-white font-bold text-sm">HDFC</div>
+                                <div>
+                                    <p class="text-gray-900 font-bold">HDFC Bank</p>
+                                    <p class="text-gray-500 text-sm">XXXX XXXX 7832</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">ACTIVE</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="bg-gray-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Amount Received</p>
+                                <p class="text-gray-900 font-bold">₹1,00,000</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Current Balance</p>
+                                <p class="text-orange-600 font-bold">₹98,200</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm mb-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Account Holder</span>
+                                <span class="text-gray-900 font-medium">Ram***n P.</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">IFSC Code</span>
+                                <span class="text-gray-900 font-medium">HDFC0005678</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Account Age</span>
+                                <span class="text-red-600 font-medium">45 days (New)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Location</span>
+                                <span class="text-gray-900 font-medium">Thane, Maharashtra</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <a href="19-single-freeze.html" class="flex-1 py-2.5 bg-red-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-lg">block</span>
+                                Freeze Account
+                            </a>
+                            <a href="19-single-freeze.html" class="w-12 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-gray-600">credit_card_off</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account 3 (Already Withdrawn) -->
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden opacity-60">
+                    <div class="p-4">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-sm">AXIS</div>
+                                <div>
+                                    <p class="text-gray-900 font-bold">Axis Bank</p>
+                                    <p class="text-gray-500 text-sm">XXXX XXXX 2190</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 bg-gray-200 text-gray-600 text-xs font-bold rounded-full">WITHDRAWN</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="bg-gray-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Amount Received</p>
+                                <p class="text-gray-900 font-bold">₹40,000</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-2.5">
+                                <p class="text-gray-500 text-xs">Current Balance</p>
+                                <p class="text-gray-500 font-bold">₹0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-100 rounded-lg p-3 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-gray-500">info</span>
+                            <p class="text-gray-600 text-sm">Withdrawn at ATM Vashi • 10:52 AM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Actions -->
+            <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 pb-8">
+                <!-- Current Step Indicator -->
+                <div class="flex items-center justify-center gap-3 mb-3">
+                    <div class="flex items-center gap-1">
+                        <span class="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">1</span>
+                        <span class="text-red-600 text-xs font-bold">FREEZE</span>
+                    </div>
+                    <div class="w-8 h-0.5 bg-gray-300"></div>
+                    <div class="flex items-center gap-1">
+                        <span class="w-6 h-6 bg-gray-300 text-gray-500 text-xs font-bold rounded-full flex items-center justify-center">2</span>
+                        <span class="text-gray-400 text-xs">Alert Teams</span>
+                    </div>
+                    <div class="w-8 h-0.5 bg-gray-300"></div>
+                    <div class="flex items-center gap-1">
+                        <span class="w-6 h-6 bg-gray-300 text-gray-500 text-xs font-bold rounded-full flex items-center justify-center">3</span>
+                        <span class="text-gray-400 text-xs">Intercept</span>
+                    </div>
+                </div>
+                
+                <a href="09-freeze-confirmation.html" class="w-full py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 flex items-center justify-center gap-2 block relative">
+                    <span class="absolute -top-2 left-4 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full shadow">⚡ PRIORITY #1</span>
+                    <span class="material-symbols-outlined text-xl">block</span>
+                    <span>Freeze All Active Accounts (2)</span>
+                </a>
+                <p class="text-center text-xs text-gray-500 mt-2">After freeze → Alert nearby police teams to intercept</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation hint -->
+    <a href="00-FLOWCHART.html" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 z-50">
+        View Flow →
+    </a>
+</body>
+</html>
+
