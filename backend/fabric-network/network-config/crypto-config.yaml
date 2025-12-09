@@ -1,0 +1,28 @@
+# Crypto configuration for AEGIS Fabric Network
+# This file defines the organizations and their certificate structure
+
+PeerOrgs:
+  # Organization 1: AEGIS Backend
+  - Name: Org1
+    Domain: org1.aegis.com
+    EnableNodeOUs: false  # Disabled to avoid MSP validation issues in development
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  # Organization 2: Audit Authority
+  - Name: Org2
+    Domain: org2.aegis.com
+    EnableNodeOUs: false  # Disabled to avoid MSP validation issues in development
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: aegis.com
+    Specs:
+      - Hostname: orderer
+

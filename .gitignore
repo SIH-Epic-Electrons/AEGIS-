@@ -1,0 +1,246 @@
+# ===========================================
+# AEGIS Project - Git Ignore Configuration
+# Allow backend/ and aegies-frontend/ folders
+# Ignore other large files and folders
+# ===========================================
+
+# Ignore everything by default
+/*
+
+# ===========================================
+# ALLOWED FOLDERS (Keep these in repository)
+# ===========================================
+
+# Allow backend folder and all its contents
+!backend/
+!backend/**
+
+# Allow aegies-frontend folder and all its contents
+!aegies-frontend/
+!aegies-frontend/**
+
+# Allow .gitignore itself
+!.gitignore
+
+# Allow README files
+!README.md
+!README.txt
+
+# Allow documentation markdown files in root
+!*.md
+
+# ===========================================
+# LARGE FILES & FOLDERS TO IGNORE
+# ===========================================
+
+# Python Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# ML Model Checkpoints (Large files)
+checkpoints/
+**/checkpoints/
+*.pt
+*.pth
+*.pkl
+*.h5
+*.ckpt
+*.safetensors
+
+# Large Data Folders
+data/
+**/data/raw/
+**/data/processed/
+*.csv
+*.parquet
+*.feather
+*.hdf5
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Expo/React Native
+.expo/
+.expo-shared/
+web-build/
+dist/
+build/
+
+# Large Documentation/PDF Files
+Documents/
+*.pdf
+*.PDF
+
+# Extracted/Archive Files
+Extracted/
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Literature Survey (Large folder)
+Literature survey/
+Literature_survey/
+LiteratureSurvey/
+
+# Design folders (original designs)
+Design/
+design/
+
+# ===========================================
+# ENVIRONMENT & CONFIG FILES
+# ===========================================
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.env
+
+# Configuration files with secrets
+config.local.json
+secrets.json
+credentials.json
+
+# ===========================================
+# OS GENERATED FILES
+# ===========================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ===========================================
+# IDE/EDITOR FILES
+# ===========================================
+
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# ===========================================
+# LOGS & TEMPORARY FILES
+# ===========================================
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.temp/
+tmp/
+temp/
+
+# ===========================================
+# TESTING & COVERAGE
+# ===========================================
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+coverage.xml
+*.cover
+
+# ===========================================
+# BUILD & DISTRIBUTION
+# ===========================================
+
+# Build outputs
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Compiled files
+*.class
+*.dll
+*.exe
+*.o
+*.a
+
+# ===========================================
+# DATABASE FILES
+# ===========================================
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Database dumps
+*.sql
+*.dump
+
+# ===========================================
+# MISC LARGE FILES
+# ===========================================
+
+# Video/Audio files
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.mp3
+*.wav
+
+# Image files (if large)
+*.psd
+*.ai
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Questions/Notes text files
+questions.txt
+*.notes
+notes.txt
+

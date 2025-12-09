@@ -1,0 +1,96 @@
+# AEGIS Backend - Requirements
+# Python 3.10+
+# NOTE: PyTorch already installed separately with CUDA
+
+# =====================================================
+# CORE FRAMEWORK
+# =====================================================
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+bcrypt==4.1.2
+
+# =====================================================
+# DATABASE
+# =====================================================
+# PostgreSQL
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.25
+alembic==1.13.1
+psycopg2-binary==2.9.9
+
+# Neo4j
+neo4j==5.16.0
+
+# Redis (for caching & real-time)
+redis==5.0.1
+
+# =====================================================
+# DATA PROCESSING
+# =====================================================
+pandas==2.1.4
+numpy==1.26.3
+scikit-learn==1.3.2
+
+# =====================================================
+# GRAPH NEURAL NETWORKS (GNN)
+# =====================================================
+torch-geometric>=2.7.0
+
+# =====================================================
+# ONLINE LEARNING
+# =====================================================
+river==0.21.0
+
+# =====================================================
+# GEOSPATIAL
+# =====================================================
+geopy==2.4.1
+
+# =====================================================
+# HTTP & API
+# =====================================================
+httpx==0.26.0
+requests==2.31.0
+
+# =====================================================
+# UTILITIES
+# =====================================================
+python-dotenv==1.0.0
+pyyaml==6.0.1
+orjson==3.9.10
+tqdm==4.66.1
+pyarrow==14.0.2
+
+# =====================================================
+# DATA VALIDATION
+# =====================================================
+email-validator==2.1.0.post1
+
+# =====================================================
+# KAGGLE (for dataset download)
+# =====================================================
+kaggle==1.5.16
+
+# =====================================================
+# HYPERLEDGER FABRIC (for audit trail)
+# =====================================================
+# Note: For production Fabric integration, install:
+# - grpcio and protobuf for gRPC communication
+# - Official Fabric Python SDK or use REST API gateway
+# For now, using local storage as fallback
+grpcio==1.60.0
+protobuf==4.25.1
+
+# =====================================================
+# BLOCKCHAIN (Hyperledger Fabric)
+# =====================================================
+# Note: hfc (Hyperledger Fabric Client) may need manual installation
+# Alternative: Use fabric-sdk-py or grpcio for direct gRPC communication
+fabric-sdk-py>=0.8.0
+grpcio>=1.60.0
+grpcio-tools>=1.60.0
+protobuf>=4.25.0

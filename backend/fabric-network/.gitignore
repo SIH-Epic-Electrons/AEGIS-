@@ -1,0 +1,20 @@
+# Fabric binaries
+bin/
+fabric-samples/
+
+# Crypto materials
+network-config/crypto-config/
+
+# Channel artifacts
+network-config/channel-artifacts/
+
+# Local audit log
+local-audit-log.jsonl
+
+# Node modules (chaincode)
+chaincode/*/node_modules/
+chaincode/*/package-lock.json
+
+# Docker volumes
+*.block
+

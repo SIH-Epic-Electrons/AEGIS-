@@ -1,0 +1,57 @@
+name: AegisNetwork
+version: 1.0.0
+
+client:
+  organization: AegisOrg
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+        eventHub: '300'
+        eventReg: '300'
+      orderer: '300'
+
+organizations:
+  AegisOrg:
+    mspid: AegisOrgMSP
+    peers:
+      - peer0.aegis.org
+    certificateAuthorities:
+      - ca.aegis.org
+    adminPrivateKey:
+      path: ./crypto-config/peerOrganizations/aegis.org/users/Admin@aegis.org/msp/keystore
+    signedCert:
+      path: ./crypto-config/peerOrganizations/aegis.org/users/Admin@aegis.org/msp/signcerts
+
+peers:
+  peer0.aegis.org:
+    url: grpc://localhost:7051
+    eventUrl: grpc://localhost:7053
+    grpcOptions:
+      ssl-target-name-override: peer0.aegis.org
+      request-timeout: 120001
+
+certificateAuthorities:
+  ca.aegis.org:
+    url: http://localhost:7054
+    caName: ca.aegis.org
+    httpOptions:
+      verify: false
+
+channels:
+  aegis-channel:
+    orderers:
+      - orderer.aegis.org
+    peers:
+      peer0.aegis.org:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+orderers:
+  orderer.aegis.org:
+    url: grpc://localhost:7050
+    grpcOptions:
+      ssl-target-name-override: orderer.aegis.org
+
