@@ -17,7 +17,7 @@
         <div class="w-[375px] h-[812px] bg-slate-50 rounded-[3rem] overflow-hidden shadow-2xl relative">
             <!-- Status Bar -->
             <div class="flex justify-between items-center px-8 pt-4 text-gray-800 text-sm bg-white">
-                <span>9:41</span>
+                <span id="currentTime">9:41</span>
                 <div class="flex items-center gap-1">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
                     <svg class="w-6 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><rect x="4" y="9" width="12" height="6" rx="1"/></svg>
@@ -28,12 +28,12 @@
             <div class="bg-white px-5 pt-4 pb-5">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg" id="userInitials">
                             SP
                         </div>
                         <div>
-                            <p class="text-gray-500 text-sm">Good morning,</p>
-                            <p class="text-gray-900 font-bold text-lg">SI Priya Sharma</p>
+                            <p class="text-gray-500 text-sm" id="greeting">Good morning,</p>
+                            <p class="text-gray-900 font-bold text-lg" id="userName">SI Priya Sharma</p>
                         </div>
                     </div>
                     <a href="17-notifications.html" class="relative p-2">
@@ -53,12 +53,12 @@
                                 <span class="material-symbols-outlined text-white/90 text-lg" style="font-variation-settings: 'FILL' 1;">priority_high</span>
                                 <span class="text-white/90 text-xs font-semibold uppercase tracking-wide">Critical Priority</span>
                             </div>
-                            <p class="text-white font-bold text-lg mb-1">3 High-Risk Alerts</p>
+                            <p class="text-white font-bold text-lg mb-1" id="highPriorityCount">3 High-Risk Alerts</p>
                             <p class="text-white/80 text-sm">Immediate attention required</p>
                         </div>
                         <div class="text-right">
                             <p class="text-white/70 text-xs">Est. at risk</p>
-                            <p class="text-white font-bold text-xl">₹12.5L</p>
+                            <p class="text-white font-bold text-xl" id="amountAtRisk">₹12.5L</p>
                         </div>
                     </div>
                     <a href="05-alert-list.html" class="w-full mt-4 py-2.5 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition block">
@@ -75,9 +75,9 @@
                                 <span class="material-symbols-outlined text-blue-600 text-lg">task_alt</span>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-gray-900">24</p>
+                        <p class="text-2xl font-bold text-gray-900" id="casesToday">24</p>
                         <p class="text-gray-500 text-xs">Cases Today</p>
-                        <p class="text-green-600 text-xs font-medium mt-1">↑ 12% from yesterday</p>
+                        <p class="text-green-600 text-xs font-medium mt-1" id="casesChange">↑ 12% from yesterday</p>
                     </div>
                     <div class="bg-white rounded-xl p-4 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
@@ -85,9 +85,9 @@
                                 <span class="material-symbols-outlined text-green-600 text-lg">savings</span>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-gray-900">₹8.2L</p>
+                        <p class="text-2xl font-bold text-gray-900" id="recoveredToday">₹8.2L</p>
                         <p class="text-gray-500 text-xs">Recovered Today</p>
-                        <p class="text-green-600 text-xs font-medium mt-1">↑ 28% recovery rate</p>
+                        <p class="text-green-600 text-xs font-medium mt-1" id="recoveryRate">↑ 28% recovery rate</p>
                     </div>
                 </div>
                 
@@ -101,8 +101,8 @@
                         </div>
                     </div>
                     
-                    <div class="space-y-3">
-                        <!-- Activity Item 1 -->
+                    <div class="space-y-3" id="activityFeed">
+                        <!-- Activity items will be loaded here -->
                         <div class="bg-white rounded-xl p-3.5 shadow-sm flex items-center gap-3">
                             <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
                                 <span class="material-symbols-outlined text-red-600 text-xl">warning</span>
@@ -114,7 +114,6 @@
                             <span class="text-gray-400 text-xs">2m ago</span>
                         </div>
                         
-                        <!-- Activity Item 2 -->
                         <div class="bg-white rounded-xl p-3.5 shadow-sm flex items-center gap-3">
                             <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                                 <span class="material-symbols-outlined text-green-600 text-xl">check_circle</span>
@@ -126,7 +125,6 @@
                             <span class="text-gray-400 text-xs">8m ago</span>
                         </div>
                         
-                        <!-- Activity Item 3 -->
                         <div class="bg-white rounded-xl p-3.5 shadow-sm flex items-center gap-3">
                             <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                                 <span class="material-symbols-outlined text-blue-600 text-xl">groups</span>
@@ -145,10 +143,15 @@
                     <div class="flex items-center gap-2 mb-3">
                         <span class="material-symbols-outlined text-cyan-400 text-xl">auto_awesome</span>
                         <span class="text-white font-semibold">AI Intelligence</span>
+                        <span class="ml-auto px-2 py-0.5 bg-cyan-500/20 text-cyan-300 text-xs rounded-full">Cross-Bank FL</span>
                     </div>
-                    <p class="text-gray-300 text-sm leading-relaxed mb-3">
+                    <p class="text-gray-300 text-sm leading-relaxed mb-3" id="aiInsight">
                         Predicted surge in <span class="text-cyan-400 font-medium">OTP fraud</span> activities in South Mumbai between 2-5 PM today. Consider increased monitoring.
                     </p>
+                    <div class="flex items-center gap-4 text-xs text-gray-400 mb-3">
+                        <span>Confidence: <span class="text-cyan-400">94.2%</span></span>
+                        <span>Model: <span class="text-cyan-400">CST v2.1</span></span>
+                    </div>
                     <a href="20-ai-analysis.html" class="text-cyan-400 text-sm font-medium flex items-center gap-1 hover:text-cyan-300 transition">
                         View Analysis
                         <span class="material-symbols-outlined text-sm">arrow_forward</span>
@@ -193,6 +196,151 @@
     <a href="00-FLOWCHART.html" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 z-50">
         View Flow →
     </a>
+    
+    <script src="js/api-config.js"></script>
+    <script>
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            
+            // Update greeting based on time
+            const hour = now.getHours();
+            let greeting = 'Good ';
+            if (hour < 12) greeting += 'morning';
+            else if (hour < 17) greeting += 'afternoon';
+            else greeting += 'evening';
+            document.getElementById('greeting').textContent = greeting + ',';
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Load user info from auth session
+        function loadUserInfo() {
+            const user = AEGIS_API.getUser();
+            const token = AEGIS_API.getToken();
+            
+            if (!user || !token) {
+                // No session - redirect to login
+                console.log('No session found, redirecting to login');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Update user name
+            document.getElementById('userName').textContent = user.name || 'Officer';
+            
+            // Update initials
+            const nameParts = (user.name || 'O').split(' ');
+            const initials = nameParts.map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userInitials').textContent = initials;
+            
+            // Log session info for debugging
+            console.log('Logged in as:', user.name, '| Badge:', user.badge_id, '| Dept:', user.department);
+        }
+        loadUserInfo();
+        
+        // Load dashboard data from API
+        async function loadDashboardData() {
+            try {
+                // Fetch main dashboard data
+                const dashboardData = await AEGIS_API.get(API_ENDPOINTS.dashboard.home);
+                
+                if (dashboardData.success && dashboardData.data) {
+                    const d = dashboardData.data;
+                    
+                    // Update from officer_stats
+                    if (d.officer_stats) {
+                        if (d.officer_stats.cases_today !== undefined) {
+                            document.getElementById('casesToday').textContent = d.officer_stats.cases_today;
+                        }
+                    }
+                    
+                    // Update from priority_alerts
+                    if (d.priority_alerts && d.priority_alerts.length > 0) {
+                        const criticalCount = d.priority_alerts.filter(a => a.priority === 'CRITICAL').length;
+                        const highCount = d.priority_alerts.filter(a => a.priority === 'HIGH').length;
+                        const totalPriority = criticalCount + highCount;
+                        
+                        document.getElementById('highPriorityCount').textContent = 
+                            totalPriority + ' High-Risk Alerts';
+                        
+                        // Calculate total amount at risk
+                        const totalAtRisk = d.priority_alerts.reduce((sum, alert) => sum + (alert.fraud_amount || 0), 0);
+                        document.getElementById('amountAtRisk').textContent = 
+                            '₹' + (totalAtRisk / 100000).toFixed(1) + 'L';
+                    }
+                    
+                    // Update from live_activity
+                    if (d.live_activity) {
+                        if (d.live_activity.amount_secured_today !== undefined) {
+                            document.getElementById('recoveredToday').textContent = 
+                                '₹' + (d.live_activity.amount_secured_today / 100000).toFixed(1) + 'L';
+                        }
+                    }
+                    
+                    // Update AI insight
+                    if (d.ai_insight) {
+                        document.getElementById('aiInsight').innerHTML = d.ai_insight.message || 
+                            'Predicted surge in <span class="text-cyan-400 font-medium">OTP fraud</span> activities in South Mumbai between 2-5 PM today. Consider increased monitoring.';
+                    }
+                }
+                
+                // Fetch dashboard stats for additional metrics
+                try {
+                    const statsData = await AEGIS_API.get(API_ENDPOINTS.dashboard.stats + '?period=all');
+                    
+                    if (statsData.success && statsData.data) {
+                        const stats = statsData.data;
+                        
+                        // Update recovery rate
+                        if (stats.recovery && stats.recovery.recovery_rate !== undefined) {
+                            document.getElementById('recoveryRate').textContent = 
+                                '↑ ' + stats.recovery.recovery_rate.toFixed(1) + '% recovery rate';
+                        }
+                        
+                        // Calculate cases change (would need yesterday's data, using mock for now)
+                        // In production, you'd compare today vs yesterday
+                        if (stats.today && stats.today.new_cases !== undefined) {
+                            // Mock calculation - in production, compare with previous day
+                            const change = 12; // This would come from comparing periods
+                            document.getElementById('casesChange').textContent = 
+                                (change >= 0 ? '↑ ' : '↓ ') + Math.abs(change) + '% from yesterday';
+                        }
+                    }
+                } catch (statsError) {
+                    console.warn('Failed to load dashboard stats:', statsError);
+                }
+            } catch (e) {
+                console.error('Failed to load dashboard data:', e);
+                // Fallback to demo data
+                try {
+                    const demoData = DEMO_DATA.dashboard;
+                    if (demoData && demoData.data) {
+                        const d = demoData.data;
+                        document.getElementById('casesToday').textContent = d.active_cases || 24;
+                        document.getElementById('highPriorityCount').textContent = 
+                            (d.high_priority || 3) + ' High-Risk Alerts';
+                        document.getElementById('amountAtRisk').textContent = 
+                            '₹' + ((d.amount_at_risk || 1250000) / 100000).toFixed(1) + 'L';
+                        document.getElementById('recoveredToday').textContent = 
+                            '₹' + ((d.recovered_today || 820000) / 100000).toFixed(1) + 'L';
+                        document.getElementById('recoveryRate').textContent = 
+                            '↑ ' + (d.recovery_rate || 28) + '% recovery rate';
+                        document.getElementById('casesChange').textContent = 
+                            '↑ ' + (d.cases_change || 12) + '% from yesterday';
+                    }
+                } catch (demoError) {
+                    console.error('Failed to load demo data:', demoError);
+                }
+            }
+        }
+        
+        loadDashboardData();
+        
+        // Auto-refresh dashboard
+        setInterval(loadDashboardData, 30000);
+    </script>
 </body>
 </html>
-

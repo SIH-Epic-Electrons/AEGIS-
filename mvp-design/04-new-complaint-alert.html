@@ -145,6 +145,104 @@
     <a href="00-FLOWCHART.html" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 z-50">
         View Flow →
     </a>
+    
+    <script src="js/api-config.js"></script>
+    <script>
+        let currentCaseId = null;
+        
+        // Load latest priority case
+        async function loadLatestPriorityCase() {
+            try {
+                // Fetch cases with priority filter - get CRITICAL first, then HIGH
+                const response = await AEGIS_API.get(API_ENDPOINTS.cases.list + '?limit=20&offset=0&priority=CRITICAL');
+                
+                if (response.success && response.data && response.data.cases && response.data.cases.length > 0) {
+                    const caseData = response.data.cases[0]; // Get the first (most recent) critical case
+                    populateAlert(caseData);
+                    return;
+                }
+                
+                // If no critical cases, try HIGH priority
+                const highResponse = await AEGIS_API.get(API_ENDPOINTS.cases.list + '?limit=20&offset=0&priority=HIGH');
+                
+                if (highResponse.success && highResponse.data && highResponse.data.cases && highResponse.data.cases.length > 0) {
+                    const caseData = highResponse.data.cases[0];
+                    populateAlert(caseData);
+                    return;
+                }
+                
+                // If no priority cases, get the latest case
+                const allResponse = await AEGIS_API.get(API_ENDPOINTS.cases.list + '?limit=1&offset=0');
+                
+                if (allResponse.success && allResponse.data && allResponse.data.cases && allResponse.data.cases.length > 0) {
+                    const caseData = allResponse.data.cases[0];
+                    populateAlert(caseData);
+                }
+            } catch (error) {
+                console.error('Failed to load latest case:', error);
+                // Keep default static data if API fails
+            }
+        }
+        
+        function populateAlert(caseData) {
+            currentCaseId = caseData.case_id;
+            
+            // Update case number
+            if (caseData.case_number) {
+                document.querySelector('.text-gray-900.font-bold.text-lg').textContent = 
+                    'NCRP #' + caseData.case_number;
+            }
+            
+            // Update fraud type
+            if (caseData.fraud_type) {
+                const fraudTypeMap = {
+                    'OTP_FRAUD': 'OTP/Vishing Fraud',
+                    'UPI_FRAUD': 'UPI Fraud',
+                    'PHISHING': 'Phishing',
+                    'LOAN_FRAUD': 'Loan Fraud',
+                    'INVESTMENT_FRAUD': 'Investment Fraud',
+                    'KYC_FRAUD': 'KYC Fraud'
+                };
+                const fraudTypeElements = document.querySelectorAll('.text-gray-900.font-semibold.text-sm');
+                if (fraudTypeElements.length > 0) {
+                    fraudTypeElements[0].textContent = fraudTypeMap[caseData.fraud_type] || caseData.fraud_type;
+                }
+            }
+            
+            // Update amount
+            if (caseData.fraud_amount) {
+                const amountElement = document.querySelector('.text-red-600.font-bold.text-lg');
+                if (amountElement) {
+                    amountElement.textContent = '₹' + caseData.fraud_amount.toLocaleString('en-IN');
+                }
+            }
+            
+            // Update victim location
+            if (caseData.victim_city) {
+                const locationElements = document.querySelectorAll('.text-gray-900.font-medium.text-sm');
+                if (locationElements.length > 1) {
+                    locationElements[1].textContent = caseData.victim_city;
+                }
+            }
+            
+            // Update confidence
+            if (caseData.location_confidence !== undefined) {
+                const confidenceElement = document.querySelector('.text-blue-700.font-bold');
+                if (confidenceElement) {
+                    confidenceElement.textContent = Math.round(caseData.location_confidence * 100) + '%';
+                }
+            }
+            
+            // Update case detail links
+            const detailLinks = document.querySelectorAll('a[href="06-case-detail.html"]');
+            detailLinks.forEach(link => {
+                link.href = '06-case-detail.html?case_id=' + currentCaseId;
+            });
+        }
+        
+        // Load case on page load
+        document.addEventListener('DOMContentLoaded', loadLatestPriorityCase);
+    </script>
 </body>
 </html>
 

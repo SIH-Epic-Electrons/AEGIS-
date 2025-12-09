@@ -17,7 +17,7 @@
         <div class="w-[375px] h-[812px] bg-slate-50 rounded-[3rem] overflow-hidden shadow-2xl relative">
             <!-- Status Bar -->
             <div class="flex justify-between items-center px-8 pt-4 text-gray-800 text-sm bg-white">
-                <span>9:41</span>
+                <span id="currentTime">9:41</span>
                 <div class="flex items-center gap-1">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
                     <svg class="w-6 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><rect x="4" y="9" width="12" height="6" rx="1"/></svg>
@@ -26,153 +26,49 @@
             
             <!-- Header -->
             <div class="bg-white px-5 pt-4 pb-3">
-                <h1 class="text-2xl font-bold text-gray-900 mb-4">Active Alerts</h1>
+                <div class="flex items-center justify-between mb-4">
+                    <h1 class="text-2xl font-bold text-gray-900">Active Alerts</h1>
+                    <button onclick="loadCases()" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                        <span class="material-symbols-outlined text-gray-600">refresh</span>
+                    </button>
+                </div>
                 
                 <!-- Filter Tabs -->
-                <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm font-semibold whitespace-nowrap ring-1 ring-red-200">
+                <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1" id="filterTabs">
+                    <button onclick="filterCases('CRITICAL')" data-filter="CRITICAL" class="filter-btn flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm font-semibold whitespace-nowrap ring-1 ring-red-200">
                         <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">error</span>
-                        Critical (3)
+                        Critical (<span id="criticalCount">0</span>)
                     </button>
-                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold whitespace-nowrap ring-1 ring-orange-200">
+                    <button onclick="filterCases('HIGH')" data-filter="HIGH" class="filter-btn flex items-center gap-1.5 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold whitespace-nowrap ring-1 ring-orange-200">
                         <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">warning</span>
-                        Urgent (5)
+                        Urgent (<span id="highCount">0</span>)
                     </button>
-                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-sm font-medium whitespace-nowrap">
+                    <button onclick="filterCases('MEDIUM')" data-filter="MEDIUM" class="filter-btn flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-sm font-medium whitespace-nowrap">
                         <span class="material-symbols-outlined text-base">schedule</span>
-                        Pending (8)
+                        Pending (<span id="mediumCount">0</span>)
                     </button>
-                    <button class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-sm font-medium whitespace-nowrap">
-                        <span class="material-symbols-outlined text-base">check_circle</span>
-                        Resolved
+                    <button onclick="filterCases('all')" data-filter="all" class="filter-btn flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-sm font-medium whitespace-nowrap">
+                        <span class="material-symbols-outlined text-base">list</span>
+                        All
                     </button>
                 </div>
             </div>
             
             <!-- Alert List -->
-            <div class="h-[calc(100%-220px)] overflow-y-auto px-5 pt-4 pb-24 space-y-3">
-                <!-- Critical Alert 1 -->
-                <a href="06-case-detail.html" class="block bg-white rounded-2xl shadow-sm overflow-hidden border-l-4 border-red-500 hover:shadow-md transition">
-                    <div class="p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">CRITICAL</span>
-                            <div class="flex items-center gap-1 text-red-600">
-                                <span class="material-symbols-outlined text-base">timer</span>
-                                <span class="text-sm font-bold">12:45</span>
-                            </div>
-                        </div>
-                        <h3 class="text-gray-900 font-bold mb-1">OTP Fraud - Andheri West</h3>
-                        <p class="text-gray-500 text-sm mb-3">Case #MH-2025-84721 • Victim: Rajesh Gupta</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4 text-sm">
-                                <span class="text-gray-900 font-semibold">₹3,50,000</span>
-                                <span class="text-gray-400">•</span>
-                                <span class="text-blue-600 font-medium">94% confidence</span>
-                            </div>
-                            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
-                        </div>
-                    </div>
-                </a>
-                
-                <!-- Critical Alert 2 -->
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-l-4 border-red-500">
-                    <div class="p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">CRITICAL</span>
-                            <div class="flex items-center gap-1 text-red-600">
-                                <span class="material-symbols-outlined text-base">timer</span>
-                                <span class="text-sm font-bold">08:20</span>
-                            </div>
-                        </div>
-                        <h3 class="text-gray-900 font-bold mb-1">Tech Support Scam - Bandra</h3>
-                        <p class="text-gray-500 text-sm mb-3">Case #MH-2025-84719 • Victim: Elderly Female</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4 text-sm">
-                                <span class="text-gray-900 font-semibold">₹5,20,000</span>
-                                <span class="text-gray-400">•</span>
-                                <span class="text-blue-600 font-medium">91% confidence</span>
-                            </div>
-                            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Critical Alert 3 -->
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-l-4 border-red-500">
-                    <div class="p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">CRITICAL</span>
-                            <div class="flex items-center gap-1 text-red-600">
-                                <span class="material-symbols-outlined text-base">timer</span>
-                                <span class="text-sm font-bold">05:10</span>
-                            </div>
-                        </div>
-                        <h3 class="text-gray-900 font-bold mb-1">Investment Fraud - Powai</h3>
-                        <p class="text-gray-500 text-sm mb-3">Case #MH-2025-84715 • Victim: IT Professional</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4 text-sm">
-                                <span class="text-gray-900 font-semibold">₹8,00,000</span>
-                                <span class="text-gray-400">•</span>
-                                <span class="text-blue-600 font-medium">97% confidence</span>
-                            </div>
-                            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Urgent Alert 1 -->
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-l-4 border-orange-500">
-                    <div class="p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">URGENT</span>
-                            <div class="flex items-center gap-1 text-orange-600">
-                                <span class="material-symbols-outlined text-base">timer</span>
-                                <span class="text-sm font-bold">28:45</span>
-                            </div>
-                        </div>
-                        <h3 class="text-gray-900 font-bold mb-1">Job Fraud - Thane</h3>
-                        <p class="text-gray-500 text-sm mb-3">Case #MH-2025-84710 • Victim: Recent Graduate</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4 text-sm">
-                                <span class="text-gray-900 font-semibold">₹1,25,000</span>
-                                <span class="text-gray-400">•</span>
-                                <span class="text-blue-600 font-medium">82% confidence</span>
-                            </div>
-                            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Urgent Alert 2 -->
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border-l-4 border-orange-500">
-                    <div class="p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">URGENT</span>
-                            <div class="flex items-center gap-1 text-orange-600">
-                                <span class="material-symbols-outlined text-base">timer</span>
-                                <span class="text-sm font-bold">42:30</span>
-                            </div>
-                        </div>
-                        <h3 class="text-gray-900 font-bold mb-1">Loan App Fraud - Navi Mumbai</h3>
-                        <p class="text-gray-500 text-sm mb-3">Case #MH-2025-84708 • Victim: Small Business Owner</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4 text-sm">
-                                <span class="text-gray-900 font-semibold">₹75,000</span>
-                                <span class="text-gray-400">•</span>
-                                <span class="text-blue-600 font-medium">78% confidence</span>
-                            </div>
-                            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
-                        </div>
-                    </div>
+            <div class="h-[calc(100%-220px)] overflow-y-auto px-5 pt-4 pb-24 space-y-3" id="alertList">
+                <!-- Loading -->
+                <div id="loadingState" class="text-center py-8">
+                    <div class="w-8 h-8 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin mx-auto"></div>
+                    <p class="text-gray-500 text-sm mt-3">Loading cases...</p>
                 </div>
             </div>
             
             <!-- Floating Map Button -->
-            <div class="absolute bottom-24 right-5 z-10">
-                <button class="w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-500/40 flex items-center justify-center">
+            <a href="10-map-view.html" class="absolute bottom-24 right-5 z-10">
+                <button class="w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-500/40 flex items-center justify-center hover:bg-blue-700 transition">
                     <span class="material-symbols-outlined text-2xl">map</span>
                 </button>
-            </div>
+            </a>
             
             <!-- Bottom Navigation -->
             <div class="absolute bottom-0 left-0 right-0 h-20 bg-white border-t border-gray-100 px-6">
@@ -206,6 +102,262 @@
     <a href="00-FLOWCHART.html" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 z-50">
         View Flow →
     </a>
+    
+    <script src="js/api-config.js"></script>
+    <script>
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Cases data
+        let allCases = [];
+        let currentFilter = 'all';
+        
+        // Demo cases
+        const DEMO_CASES = [
+            {
+                case_id: 'case-001',
+                case_number: 'MH-2025-84721',
+                status: 'IN_PROGRESS',
+                priority: 'CRITICAL',
+                fraud_type: 'OTP_FRAUD',
+                fraud_amount: 350000,
+                victim_name: 'Rajesh Gupta',
+                victim_city: 'Andheri West',
+                location_confidence: 0.94,
+                time_remaining: '12:45',
+                created_at: new Date().toISOString()
+            },
+            {
+                case_id: 'case-002',
+                case_number: 'MH-2025-84719',
+                status: 'IN_PROGRESS',
+                priority: 'CRITICAL',
+                fraud_type: 'PHISHING',
+                fraud_amount: 520000,
+                victim_name: 'Elderly Female',
+                victim_city: 'Bandra',
+                location_confidence: 0.91,
+                time_remaining: '08:20',
+                created_at: new Date().toISOString()
+            },
+            {
+                case_id: 'case-003',
+                case_number: 'MH-2025-84715',
+                status: 'IN_PROGRESS',
+                priority: 'CRITICAL',
+                fraud_type: 'INVESTMENT_FRAUD',
+                fraud_amount: 800000,
+                victim_name: 'IT Professional',
+                victim_city: 'Powai',
+                location_confidence: 0.97,
+                time_remaining: '05:10',
+                created_at: new Date().toISOString()
+            },
+            {
+                case_id: 'case-004',
+                case_number: 'MH-2025-84710',
+                status: 'NEW',
+                priority: 'HIGH',
+                fraud_type: 'KYC_FRAUD',
+                fraud_amount: 125000,
+                victim_name: 'Recent Graduate',
+                victim_city: 'Thane',
+                location_confidence: 0.82,
+                time_remaining: '28:45',
+                created_at: new Date().toISOString()
+            },
+            {
+                case_id: 'case-005',
+                case_number: 'MH-2025-84708',
+                status: 'NEW',
+                priority: 'HIGH',
+                fraud_type: 'LOAN_FRAUD',
+                fraud_amount: 75000,
+                victim_name: 'Small Business Owner',
+                victim_city: 'Navi Mumbai',
+                location_confidence: 0.78,
+                time_remaining: '42:30',
+                created_at: new Date().toISOString()
+            },
+            {
+                case_id: 'case-006',
+                case_number: 'MH-2025-84705',
+                status: 'NEW',
+                priority: 'MEDIUM',
+                fraud_type: 'UPI_FRAUD',
+                fraud_amount: 45000,
+                victim_name: 'Housewife',
+                victim_city: 'Dadar',
+                location_confidence: 0.72,
+                time_remaining: '55:00',
+                created_at: new Date().toISOString()
+            },
+            {
+                case_id: 'case-007',
+                case_number: 'MH-2025-84702',
+                status: 'NEW',
+                priority: 'HIGH',
+                fraud_type: 'OTP_FRAUD',
+                fraud_amount: 180000,
+                victim_name: 'Retired Officer',
+                victim_city: 'Borivali',
+                location_confidence: 0.85,
+                time_remaining: '35:20',
+                created_at: new Date().toISOString()
+            },
+            {
+                case_id: 'case-008',
+                case_number: 'MH-2025-84698',
+                status: 'NEW',
+                priority: 'HIGH',
+                fraud_type: 'PHISHING',
+                fraud_amount: 250000,
+                victim_name: 'Doctor',
+                victim_city: 'Malad',
+                location_confidence: 0.88,
+                time_remaining: '22:15',
+                created_at: new Date().toISOString()
+            }
+        ];
+        
+        // Fraud type display names
+        const FRAUD_TYPES = {
+            'UPI_FRAUD': 'UPI Fraud',
+            'OTP_FRAUD': 'OTP Fraud',
+            'PHISHING': 'Phishing Scam',
+            'INVESTMENT_FRAUD': 'Investment Fraud',
+            'LOAN_FRAUD': 'Loan App Fraud',
+            'KYC_FRAUD': 'Job/KYC Fraud'
+        };
+        
+        // Load cases from API
+        async function loadCases() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            
+            try {
+                const response = await AEGIS_API.get(API_ENDPOINTS.cases.list);
+                if (response.success && response.data) {
+                    allCases = response.data.cases || [];
+                } else {
+                    throw new Error('Invalid response');
+                }
+            } catch (e) {
+                console.log('Using demo cases');
+                allCases = DEMO_CASES;
+            }
+            
+            updateFilterCounts();
+            renderCases();
+        }
+        
+        // Update filter counts
+        function updateFilterCounts() {
+            const counts = {
+                CRITICAL: 0,
+                HIGH: 0,
+                MEDIUM: 0,
+                LOW: 0
+            };
+            
+            allCases.forEach(c => {
+                if (counts[c.priority] !== undefined) {
+                    counts[c.priority]++;
+                }
+            });
+            
+            document.getElementById('criticalCount').textContent = counts.CRITICAL;
+            document.getElementById('highCount').textContent = counts.HIGH;
+            document.getElementById('mediumCount').textContent = counts.MEDIUM;
+        }
+        
+        // Filter cases
+        function filterCases(priority) {
+            currentFilter = priority;
+            
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const filter = btn.dataset.filter;
+                if (filter === priority) {
+                    btn.classList.add('ring-1');
+                } else {
+                    btn.classList.remove('ring-1');
+                }
+            });
+            
+            renderCases();
+        }
+        
+        // Render cases
+        function renderCases() {
+            const container = document.getElementById('alertList');
+            document.getElementById('loadingState').classList.add('hidden');
+            
+            let filtered = allCases;
+            if (currentFilter !== 'all') {
+                filtered = allCases.filter(c => c.priority === currentFilter);
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <span class="material-symbols-outlined text-gray-300 text-5xl">inbox</span>
+                        <p class="text-gray-500 mt-2">No cases found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filtered.map(c => {
+                const priorityColors = {
+                    CRITICAL: { border: 'border-red-500', bg: 'bg-red-100', text: 'text-red-700', timer: 'text-red-600' },
+                    HIGH: { border: 'border-orange-500', bg: 'bg-orange-100', text: 'text-orange-700', timer: 'text-orange-600' },
+                    MEDIUM: { border: 'border-yellow-500', bg: 'bg-yellow-100', text: 'text-yellow-700', timer: 'text-yellow-600' },
+                    LOW: { border: 'border-blue-500', bg: 'bg-blue-100', text: 'text-blue-700', timer: 'text-blue-600' }
+                };
+                
+                const colors = priorityColors[c.priority] || priorityColors.MEDIUM;
+                const fraudType = FRAUD_TYPES[c.fraud_type] || c.fraud_type;
+                const amount = (c.fraud_amount || 0).toLocaleString('en-IN');
+                const confidence = Math.round((c.location_confidence || 0.8) * 100);
+                const timeRemaining = c.time_remaining || '15:00';
+                
+                return `
+                    <a href="06-case-detail.html?case_id=${c.case_id}" class="block bg-white rounded-2xl shadow-sm overflow-hidden border-l-4 ${colors.border} hover:shadow-md transition">
+                        <div class="p-4">
+                            <div class="flex items-start justify-between mb-2">
+                                <span class="px-2 py-0.5 ${colors.bg} ${colors.text} text-xs font-bold rounded-full">${c.priority}</span>
+                                <div class="flex items-center gap-1 ${colors.timer}">
+                                    <span class="material-symbols-outlined text-base">timer</span>
+                                    <span class="text-sm font-bold">${timeRemaining}</span>
+                                </div>
+                            </div>
+                            <h3 class="text-gray-900 font-bold mb-1">${fraudType} - ${c.victim_city}</h3>
+                            <p class="text-gray-500 text-sm mb-3">Case ${c.case_number} • Victim: ${c.victim_name}</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4 text-sm">
+                                    <span class="text-gray-900 font-semibold">₹${amount}</span>
+                                    <span class="text-gray-400">•</span>
+                                    <span class="text-blue-600 font-medium">${confidence}% confidence</span>
+                                </div>
+                                <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+        
+        // Initialize
+        loadCases();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadCases, 30000);
+    </script>
 </body>
 </html>
-

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS - Money Flow Visualization</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 16px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .graph-container {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            height: 700px;
+            position: relative;
+        }
+        
+        #graph-network {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.5);
+        }
+        
+        .legend {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            font-size: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .info-panel {
+            margin-top: 24px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .info-panel h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #e2e8f0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .info-card {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .info-card-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        
+        .info-card-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        
+        .error {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            color: #fca5a5;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ AEGIS - Money Flow Visualization</h1>
+            <p>Interactive graph showing money flow from victim through mule accounts</p>
+        </div>
+        
+        <div class="error" id="error-message"></div>
+        
+        <div class="controls">
+            <input 
+                type="text" 
+                id="case-id-input" 
+                placeholder="Enter Case ID (e.g., 22f20988-a68d-401f-9cbe-68d4c9fe9855)"
+                value="22f20988-a68d-401f-9cbe-68d4c9fe9855"
+            >
+            <button onclick="loadGraph()">Load Graph</button>
+            <button onclick="loadGraphWithAuth()">Load with Auth Token</button>
+        </div>
+        
+        <div class="graph-container">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #22c55e;"></div>
+                    <span>Victim Account</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f97316;"></div>
+                    <span>Mule Account</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #3b82f6;"></div>
+                    <span>Regular Account</span>
+                </div>
+            </div>
+            <div id="graph-network"></div>
+            <div class="loading" id="loading">Loading graph data...</div>
+        </div>
+        
+        <div class="info-panel" id="info-panel" style="display: none;">
+            <h3>Case Information</h3>
+            <div class="info-grid" id="info-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        let network = null;
+        let graphData = null;
+        
+        // API Configuration
+        const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
+        const AUTH_TOKEN = localStorage.getItem('aegis_auth_token') || '';
+        
+        // Load graph from API
+        async function loadGraph() {
+            const caseId = document.getElementById('case-id-input').value.trim();
+            
+            if (!caseId) {
+                showError('Please enter a Case ID');
+                return;
+            }
+            
+            showLoading(true);
+            hideError();
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/graph/case/${caseId}/visualization`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AUTH_TOKEN}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Authentication required. Please login first.');
+                    }
+                    if (response.status === 404) {
+                        throw new Error('Case not found. Make sure the Case ID is correct.');
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    renderGraph(result.data);
+                    showInfo(result.data);
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                showError(error.message);
+                console.error('Error loading graph:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Load graph with authentication prompt
+        async function loadGraphWithAuth() {
+            const token = prompt('Enter your authentication token:');
+            if (token) {
+                localStorage.setItem('aegis_auth_token', token);
+                await loadGraph();
+            }
+        }
+        
+        // Render graph using vis.js
+        function renderGraph(data) {
+            const container = document.getElementById('graph-network');
+            
+            // Prepare nodes
+            const nodes = new vis.DataSet(
+                data.nodes.map(node => ({
+                    id: node.id,
+                    label: node.label,
+                    title: `
+                        Account: ${node.account_number}\n
+                        Bank: ${node.bank}\n
+                        Holder: ${node.holder_name || 'N/A'}\n
+                        Type: ${node.node_type}\n
+                        Mule Probability: ${(node.mule_probability * 100).toFixed(1)}%\n
+                        Risk Score: ${node.risk_score.toFixed(1)}
+                    `,
+                    color: {
+                        background: node.color,
+                        border: node.color,
+                        highlight: {
+                            background: node.color,
+                            border: '#ffffff'
+                        }
+                    },
+                    size: node.size,
+                    font: {
+                        color: '#ffffff',
+                        size: 14,
+                        face: 'Segoe UI'
+                    },
+                    borderWidth: 2,
+                    shadow: true
+                }))
+            );
+            
+            // Prepare edges
+            const edges = new vis.DataSet(
+                data.edges.map(edge => ({
+                    id: edge.id,
+                    from: edge.source,
+                    to: edge.target,
+                    label: edge.label,
+                    title: `
+                        Amount: ₹${edge.amount.toLocaleString('en-IN')}\n
+                        Type: ${edge.transaction_type}\n
+                        Hop: ${edge.hop_number}\n
+                        Time: ${new Date(edge.timestamp).toLocaleString()}
+                    `,
+                    color: {
+                        color: edge.color,
+                        highlight: '#ffffff'
+                    },
+                    width: edge.width,
+                    arrows: {
+                        to: {
+                            enabled: true,
+                            scaleFactor: 1.2
+                        }
+                    },
+                    font: {
+                        color: '#94a3b8',
+                        size: 11,
+                        align: 'middle'
+                    },
+                    smooth: {
+                        type: 'curvedCW',
+                        roundness: 0.2
+                    }
+                }))
+            );
+            
+            // Network options
+            const options = {
+                nodes: {
+                    shape: 'dot',
+                    shadow: true,
+                    font: {
+                        size: 14,
+                        color: '#ffffff'
+                    }
+                },
+                edges: {
+                    arrows: {
+                        to: {
+                            enabled: true,
+                            scaleFactor: 1.2
+                        }
+                    },
+                    smooth: {
+                        type: 'curvedCW',
+                        roundness: 0.2
+                    },
+                    font: {
+                        size: 11,
+                        color: '#94a3b8',
+                        align: 'middle'
+                    }
+                },
+                physics: {
+                    enabled: true,
+                    stabilization: {
+                        iterations: 200
+                    },
+                    barnesHut: {
+                        gravitationalConstant: -2000,
+                        centralGravity: 0.3,
+                        springLength: 200,
+                        springConstant: 0.04,
+                        damping: 0.09
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 100,
+                    zoomView: true,
+                    dragView: true
+                }
+            };
+            
+            // Create network
+            graphData = { nodes, edges };
+            network = new vis.Network(container, graphData, options);
+            
+            // Add event listeners
+            network.on('click', function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    const node = data.nodes.find(n => n.id === nodeId);
+                    if (node) {
+                        console.log('Selected node:', node);
+                    }
+                }
+            });
+        }
+        
+        // Show case information
+        function showInfo(data) {
+            const panel = document.getElementById('info-panel');
+            const grid = document.getElementById('info-grid');
+            
+            const muleCount = data.nodes.filter(n => n.is_mule === 1).length;
+            const totalAmount = data.edges.reduce((sum, e) => sum + e.amount, 0);
+            const maxAmount = Math.max(...data.edges.map(e => e.amount));
+            
+            grid.innerHTML = `
+                <div class="info-card">
+                    <div class="info-card-label">Case Number</div>
+                    <div class="info-card-value">${data.case_number || 'N/A'}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">Total Accounts</div>
+                    <div class="info-card-value">${data.nodes.length}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">Mule Accounts</div>
+                    <div class="info-card-value" style="color: #f97316;">${muleCount}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">Transactions</div>
+                    <div class="info-card-value">${data.edges.length}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">Total Amount</div>
+                    <div class="info-card-value">₹${totalAmount.toLocaleString('en-IN')}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">Largest Transaction</div>
+                    <div class="info-card-value">₹${maxAmount.toLocaleString('en-IN')}</div>
+                </div>
+            `;
+            
+            panel.style.display = 'block';
+        }
+        
+        // Utility functions
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        // Load graph on page load if case ID is present
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const caseId = urlParams.get('case_id');
+            if (caseId) {
+                document.getElementById('case-id-input').value = caseId;
+                loadGraph();
+            }
+        });
+    </script>
+</body>
+</html>
+

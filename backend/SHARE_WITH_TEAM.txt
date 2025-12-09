@@ -1,0 +1,55 @@
+═══════════════════════════════════════════════════════════════
+  AEGIS BACKEND API - TEAM ACCESS INFORMATION
+═══════════════════════════════════════════════════════════════
+
+🌐 API BASE URL:
+   http://192.168.137.248
+
+📚 API DOCUMENTATION:
+   http://192.168.137.248/docs
+
+✅ HEALTH CHECK:
+   http://192.168.137.248/health
+
+═══════════════════════════════════════════════════════════════
+  IMPORTANT NOTES
+═══════════════════════════════════════════════════════════════
+
+⚠️  This is a DEVELOPMENT server running on a local machine
+⚠️  Server must be ON for API to work
+⚠️  All team members must be on the SAME NETWORK (same WiFi)
+
+═══════════════════════════════════════════════════════════════
+  FRONTEND CONFIGURATION
+═══════════════════════════════════════════════════════════════
+
+Update your frontend API base URL to:
+   const API_BASE_URL = "http://192.168.137.248";
+
+Example API calls:
+   POST http://192.168.137.248/api/v1/auth/login
+   GET  http://192.168.137.248/api/v1/cases
+   POST http://192.168.137.248/api/v1/public/complaints
+
+═══════════════════════════════════════════════════════════════
+  TESTING
+═══════════════════════════════════════════════════════════════
+
+1. Open browser: http://192.168.137.248/health
+   Should show: {"status":"healthy",...}
+
+2. Open browser: http://192.168.137.248/docs
+   Should show API documentation (Swagger UI)
+
+═══════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+Can't connect?
+  ✓ Check if you're on the same network
+  ✓ Try: ping 192.168.137.248
+  ✓ Check if server is running (ask backend dev)
+  ✓ Try: http://192.168.137.248/health in browser
+
+═══════════════════════════════════════════════════════════════
+

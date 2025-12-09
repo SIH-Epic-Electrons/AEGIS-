@@ -17,7 +17,7 @@
         <div class="w-[375px] h-[812px] bg-slate-50 rounded-[3rem] overflow-hidden shadow-2xl relative">
             <!-- Status Bar -->
             <div class="flex justify-between items-center px-8 pt-4 text-gray-800 text-sm bg-white">
-                <span>9:41</span>
+                <span id="currentTime">9:41</span>
                 <div class="flex items-center gap-1">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
                     <svg class="w-6 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><rect x="4" y="9" width="12" height="6" rx="1"/></svg>
@@ -28,13 +28,11 @@
             <div class="bg-white px-5 pt-4 pb-4 flex items-center justify-between">
                 <h1 class="text-2xl font-bold text-gray-900">Statistics</h1>
                 <div class="relative">
-                    <select id="timeFilter" class="appearance-none flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 pr-8 text-gray-700 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="this-month">This Month</option>
-                        <option value="last-month">Last Month</option>
-                        <option value="this-week">This Week</option>
-                        <option value="last-week">Last Week</option>
+                    <select id="periodFilter" onchange="loadStats()" class="appearance-none flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 pr-8 text-gray-700 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="month">This Month</option>
+                        <option value="week">This Week</option>
                         <option value="today">Today</option>
-                        <option value="all-time">All Time</option>
+                        <option value="all">All Time</option>
                     </select>
                     <span class="material-symbols-outlined text-gray-500 text-lg absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
                 </div>
@@ -47,13 +45,13 @@
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <p class="text-white/70 text-sm">Your Performance</p>
-                            <p class="text-3xl font-bold">Excellent</p>
+                            <p class="text-3xl font-bold" id="performanceRating">Excellent</p>
                         </div>
                         <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
                             <span class="text-3xl">⭐</span>
                         </div>
                     </div>
-                    <p class="text-white/80 text-sm">You're in the top 10% of officers this month!</p>
+                    <p class="text-white/80 text-sm" id="performanceNote">You're in the top 10% of officers this month!</p>
                 </div>
                 
                 <!-- Key Metrics -->
@@ -64,9 +62,9 @@
                                 <span class="material-symbols-outlined text-green-600 text-lg">check_circle</span>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-gray-900">128</p>
+                        <p class="text-2xl font-bold text-gray-900" id="casesResolved">--</p>
                         <p class="text-gray-500 text-xs">Cases Resolved</p>
-                        <p class="text-green-600 text-xs font-medium mt-1">↑ 12.5% vs last month</p>
+                        <p class="text-green-600 text-xs font-medium mt-1" id="casesChange">Loading...</p>
                     </div>
                     <div class="bg-white rounded-xl p-4 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
@@ -74,9 +72,9 @@
                                 <span class="material-symbols-outlined text-blue-600 text-lg">savings</span>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-gray-900">₹45.2L</p>
+                        <p class="text-2xl font-bold text-gray-900" id="fundsRecovered">--</p>
                         <p class="text-gray-500 text-xs">Funds Recovered</p>
-                        <p class="text-green-600 text-xs font-medium mt-1">↑ 8.2% vs last month</p>
+                        <p class="text-green-600 text-xs font-medium mt-1" id="recoveryChange">Loading...</p>
                     </div>
                     <div class="bg-white rounded-xl p-4 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
@@ -84,9 +82,9 @@
                                 <span class="material-symbols-outlined text-orange-600 text-lg">timer</span>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-gray-900">2m 15s</p>
+                        <p class="text-2xl font-bold text-gray-900" id="avgResponseTime">--</p>
                         <p class="text-gray-500 text-xs">Avg Response Time</p>
-                        <p class="text-green-600 text-xs font-medium mt-1">↓ 3.1% faster</p>
+                        <p class="text-green-600 text-xs font-medium mt-1" id="responseChange">Loading...</p>
                     </div>
                     <div class="bg-white rounded-xl p-4 shadow-sm">
                         <div class="flex items-center gap-2 mb-2">
@@ -94,83 +92,78 @@
                                 <span class="material-symbols-outlined text-purple-600 text-lg">target</span>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-gray-900">92%</p>
+                        <p class="text-2xl font-bold text-gray-900" id="predictionAccuracy">--</p>
                         <p class="text-gray-500 text-xs">Prediction Accuracy</p>
-                        <p class="text-green-600 text-xs font-medium mt-1">↑ 1.5% improvement</p>
+                        <p class="text-green-600 text-xs font-medium mt-1" id="accuracyChange">Loading...</p>
                     </div>
                 </div>
                 
-                <!-- Monthly Trend -->
+                <!-- Cases by Status -->
                 <div class="bg-white rounded-2xl shadow-sm p-4">
-                    <h3 class="font-bold text-gray-900 mb-3">Cases Resolved Trend</h3>
-                    <div class="h-32 flex items-end justify-between gap-2 px-2">
-                        <div class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-full bg-blue-200 rounded-t" style="height: 40%"></div>
-                            <span class="text-xs text-gray-500">Jan</span>
+                    <h3 class="font-bold text-gray-900 mb-4">Cases by Status</h3>
+                    <div class="space-y-3" id="casesByStatus">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="flex-1 text-gray-700 text-sm">Resolved</span>
+                            <span class="text-gray-900 font-bold" id="statusResolved">--</span>
                         </div>
-                        <div class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-full bg-blue-200 rounded-t" style="height: 55%"></div>
-                            <span class="text-xs text-gray-500">Feb</span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <span class="flex-1 text-gray-700 text-sm">In Progress</span>
+                            <span class="text-gray-900 font-bold" id="statusInProgress">--</span>
                         </div>
-                        <div class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-full bg-blue-200 rounded-t" style="height: 45%"></div>
-                            <span class="text-xs text-gray-500">Mar</span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                            <span class="flex-1 text-gray-700 text-sm">Team Deployed</span>
+                            <span class="text-gray-900 font-bold" id="statusDeployed">--</span>
                         </div>
-                        <div class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-full bg-blue-400 rounded-t" style="height: 70%"></div>
-                            <span class="text-xs text-gray-500">Apr</span>
-                        </div>
-                        <div class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-full bg-blue-500 rounded-t" style="height: 85%"></div>
-                            <span class="text-xs text-gray-500">May</span>
-                        </div>
-                        <div class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-full bg-blue-600 rounded-t" style="height: 100%"></div>
-                            <span class="text-xs text-gray-500 font-medium">Jun</span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                            <span class="flex-1 text-gray-700 text-sm">Closed</span>
+                            <span class="text-gray-900 font-bold" id="statusClosed">--</span>
                         </div>
                     </div>
-                    <p class="text-center text-gray-500 text-xs mt-3">+15.2% growth over 6 months</p>
                 </div>
                 
-                <!-- Fraud Types -->
+                <!-- Cases by Fraud Type -->
                 <div class="bg-white rounded-2xl shadow-sm p-4">
-                    <h3 class="font-bold text-gray-900 mb-3">Cases by Fraud Type</h3>
-                    <div class="space-y-3">
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-700">OTP/Vishing Fraud</span>
-                                <span class="text-gray-900 font-semibold">42%</span>
-                            </div>
-                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-red-500 rounded-full" style="width: 42%"></div>
-                            </div>
+                    <h3 class="font-bold text-gray-900 mb-4">Fraud Type Distribution</h3>
+                    <div class="space-y-3" id="fraudTypeDistribution">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Top Cities -->
+                <div class="bg-white rounded-2xl shadow-sm p-4">
+                    <h3 class="font-bold text-gray-900 mb-4">Top Cities</h3>
+                    <div class="space-y-2" id="topCities">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- AI Model Performance -->
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-cyan-400 text-xl">auto_awesome</span>
+                        <span class="text-white font-semibold">AI Model Performance</span>
+                        <span class="ml-auto px-2 py-0.5 bg-cyan-500/20 text-cyan-300 text-xs rounded-full">FL Enhanced</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white/10 rounded-lg p-3 text-center">
+                            <p class="text-white font-bold text-xl" id="aiLocationAccuracy">--</p>
+                            <p class="text-gray-400 text-xs">Location Accuracy</p>
                         </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-700">Investment Scam</span>
-                                <span class="text-gray-900 font-semibold">28%</span>
-                            </div>
-                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-orange-500 rounded-full" style="width: 28%"></div>
-                            </div>
+                        <div class="bg-white/10 rounded-lg p-3 text-center">
+                            <p class="text-white font-bold text-xl" id="aiTimeAccuracy">--</p>
+                            <p class="text-gray-400 text-xs">Time Prediction</p>
                         </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-700">Job Fraud</span>
-                                <span class="text-gray-900 font-semibold">18%</span>
-                            </div>
-                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-blue-500 rounded-full" style="width: 18%"></div>
-                            </div>
+                        <div class="bg-white/10 rounded-lg p-3 text-center">
+                            <p class="text-white font-bold text-xl" id="aiMuleDetection">--</p>
+                            <p class="text-gray-400 text-xs">Mule Detection</p>
                         </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-700">Others</span>
-                                <span class="text-gray-900 font-semibold">12%</span>
-                            </div>
-                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-gray-400 rounded-full" style="width: 12%"></div>
-                            </div>
+                        <div class="bg-white/10 rounded-lg p-3 text-center">
+                            <p class="text-white font-bold text-xl" id="aiFeedbackCount">--</p>
+                            <p class="text-gray-400 text-xs">RL Feedback</p>
                         </div>
                     </div>
                 </div>
@@ -179,15 +172,15 @@
             <!-- Bottom Navigation -->
             <div class="absolute bottom-0 left-0 right-0 h-20 bg-white border-t border-gray-100 px-6">
                 <div class="flex items-center justify-around h-full">
-                    <a href="03-home-dashboard.html" class="flex flex-col items-center gap-1 text-gray-400 hover:text-blue-600 transition">
+                    <a href="03-home-dashboard.html" class="flex flex-col items-center gap-1 text-gray-400">
                         <span class="material-symbols-outlined text-2xl">home</span>
                         <span class="text-xs font-medium">Home</span>
                     </a>
-                    <a href="05-alert-list.html" class="flex flex-col items-center gap-1 text-gray-400 hover:text-blue-600 transition">
+                    <a href="05-alert-list.html" class="flex flex-col items-center gap-1 text-gray-400">
                         <span class="material-symbols-outlined text-2xl">shield</span>
                         <span class="text-xs font-medium">Alerts</span>
                     </a>
-                    <a href="10-map-view.html" class="flex flex-col items-center gap-1 text-gray-400 hover:text-blue-600 transition">
+                    <a href="10-map-view.html" class="flex flex-col items-center gap-1 text-gray-400">
                         <span class="material-symbols-outlined text-2xl">map</span>
                         <span class="text-xs font-medium">Map</span>
                     </a>
@@ -195,19 +188,210 @@
                         <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">bar_chart</span>
                         <span class="text-xs font-medium">Stats</span>
                     </a>
-                    <a href="16-profile.html" class="flex flex-col items-center gap-1 text-gray-400 hover:text-blue-600 transition">
+                    <a href="16-profile.html" class="flex flex-col items-center gap-1 text-gray-400">
                         <span class="material-symbols-outlined text-2xl">person</span>
                         <span class="text-xs font-medium">Profile</span>
                     </a>
                 </div>
             </div>
-            
-            <!-- Navigation hint -->
-            <a href="00-FLOWCHART.html" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 z-50">
-                View Flow →
-            </a>
         </div>
     </div>
+    
+    <!-- Navigation hint -->
+    <a href="00-FLOWCHART.html" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 z-50">
+        View Flow →
+    </a>
+    
+    <script src="js/api-config.js"></script>
+    <script>
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Demo stats data
+        const DEMO_STATS = {
+            period: 'month',
+            cases: {
+                total: 156,
+                resolved: 124,
+                in_progress: 24,
+                success_rate: 79.5,
+                by_status: {
+                    NEW: 8,
+                    IN_PROGRESS: 24,
+                    TEAM_DEPLOYED: 12,
+                    RESOLVED: 98,
+                    CLOSED: 14
+                },
+                by_priority: {
+                    CRITICAL: 12,
+                    HIGH: 45,
+                    MEDIUM: 67,
+                    LOW: 32
+                },
+                by_fraud_type: {
+                    UPI_FRAUD: 52,
+                    OTP_FRAUD: 38,
+                    PHISHING: 28,
+                    INVESTMENT_FRAUD: 22,
+                    LOAN_FRAUD: 16
+                }
+            },
+            recovery: {
+                total_fraud_amount: 45000000,
+                total_recovered: 32500000,
+                recovery_rate: 72.2
+            },
+            performance: {
+                avg_response_time_seconds: 135,
+                prediction_accuracy: 87.5
+            },
+            top_cities: [
+                { city: 'Mumbai', cases: 45 },
+                { city: 'Pune', cases: 28 },
+                { city: 'Thane', cases: 22 },
+                { city: 'Navi Mumbai', cases: 18 },
+                { city: 'Nagpur', cases: 12 }
+            ]
+        };
+        
+        // Fraud type display names
+        const FRAUD_TYPE_NAMES = {
+            'UPI_FRAUD': 'UPI Fraud',
+            'OTP_FRAUD': 'OTP Fraud',
+            'PHISHING': 'Phishing',
+            'INVESTMENT_FRAUD': 'Investment Fraud',
+            'LOAN_FRAUD': 'Loan Fraud',
+            'KYC_FRAUD': 'KYC Fraud'
+        };
+        
+        // Load stats from API
+        async function loadStats() {
+            const period = document.getElementById('periodFilter').value;
+            let stats = DEMO_STATS;
+            
+            try {
+                const response = await AEGIS_API.get(API_ENDPOINTS.dashboard.stats + '?period=' + period);
+                if (response.success && response.data) {
+                    stats = response.data;
+                }
+            } catch (e) {
+                console.log('Using demo stats');
+            }
+            
+            // Also try to load RL stats for AI performance
+            let rlStats = null;
+            try {
+                const rlResponse = await AEGIS_API.get(API_ENDPOINTS.rl.stats);
+                if (rlResponse.success && rlResponse.data) {
+                    rlStats = rlResponse.data;
+                }
+            } catch (e) {
+                console.log('Using demo RL stats');
+            }
+            
+            renderStats(stats, rlStats);
+        }
+        
+        // Render stats
+        function renderStats(stats, rlStats) {
+            // Key metrics
+            document.getElementById('casesResolved').textContent = stats.cases?.resolved || 124;
+            document.getElementById('casesChange').textContent = '↑ 12.5% vs last period';
+            
+            const recovered = (stats.recovery?.total_recovered || 32500000) / 100000;
+            document.getElementById('fundsRecovered').textContent = '₹' + recovered.toFixed(1) + 'L';
+            document.getElementById('recoveryChange').textContent = '↑ ' + (stats.recovery?.recovery_rate || 72.2).toFixed(1) + '% rate';
+            
+            const responseTime = stats.performance?.avg_response_time_seconds || 135;
+            const mins = Math.floor(responseTime / 60);
+            const secs = responseTime % 60;
+            document.getElementById('avgResponseTime').textContent = mins + 'm ' + secs + 's';
+            document.getElementById('responseChange').textContent = '↓ 3.1% faster';
+            
+            document.getElementById('predictionAccuracy').textContent = 
+                (stats.performance?.prediction_accuracy || 87.5).toFixed(0) + '%';
+            document.getElementById('accuracyChange').textContent = '↑ 1.5% improvement';
+            
+            // Cases by status
+            const byStatus = stats.cases?.by_status || {};
+            document.getElementById('statusResolved').textContent = byStatus.RESOLVED || 98;
+            document.getElementById('statusInProgress').textContent = byStatus.IN_PROGRESS || 24;
+            document.getElementById('statusDeployed').textContent = byStatus.TEAM_DEPLOYED || 12;
+            document.getElementById('statusClosed').textContent = byStatus.CLOSED || 14;
+            
+            // Fraud type distribution
+            const byFraud = stats.cases?.by_fraud_type || DEMO_STATS.cases.by_fraud_type;
+            const total = Object.values(byFraud).reduce((a, b) => a + b, 0);
+            
+            const fraudColors = {
+                'UPI_FRAUD': 'bg-blue-500',
+                'OTP_FRAUD': 'bg-orange-500',
+                'PHISHING': 'bg-red-500',
+                'INVESTMENT_FRAUD': 'bg-purple-500',
+                'LOAN_FRAUD': 'bg-green-500',
+                'KYC_FRAUD': 'bg-yellow-500'
+            };
+            
+            document.getElementById('fraudTypeDistribution').innerHTML = 
+                Object.entries(byFraud).map(([type, count]) => {
+                    const pct = ((count / total) * 100).toFixed(0);
+                    const color = fraudColors[type] || 'bg-gray-500';
+                    const name = FRAUD_TYPE_NAMES[type] || type;
+                    return `
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-gray-700 text-sm">${name}</span>
+                                <span class="text-gray-500 text-xs">${count} (${pct}%)</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full ${color} rounded-full" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            
+            // Top cities
+            const cities = stats.top_cities || DEMO_STATS.top_cities;
+            const maxCases = Math.max(...cities.map(c => c.cases));
+            
+            document.getElementById('topCities').innerHTML = 
+                cities.slice(0, 5).map((city, idx) => {
+                    const pct = (city.cases / maxCases * 100).toFixed(0);
+                    return `
+                        <div class="flex items-center gap-3">
+                            <span class="w-5 h-5 bg-blue-100 text-blue-700 text-xs font-bold rounded flex items-center justify-center">${idx + 1}</span>
+                            <span class="flex-1 text-gray-700 text-sm">${city.city}</span>
+                            <div class="w-20 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500 rounded-full" style="width: ${pct}%"></div>
+                            </div>
+                            <span class="text-gray-900 font-bold text-sm w-8 text-right">${city.cases}</span>
+                        </div>
+                    `;
+                }).join('');
+            
+            // AI Performance
+            document.getElementById('aiLocationAccuracy').textContent = 
+                (stats.performance?.prediction_accuracy || 87.5).toFixed(0) + '%';
+            document.getElementById('aiTimeAccuracy').textContent = '84%';
+            document.getElementById('aiMuleDetection').textContent = '91%';
+            
+            // RL feedback
+            if (rlStats) {
+                document.getElementById('aiFeedbackCount').textContent = 
+                    (rlStats.total_feedback || 847).toLocaleString();
+            } else {
+                document.getElementById('aiFeedbackCount').textContent = '847';
+            }
+        }
+        
+        // Initialize
+        loadStats();
+    </script>
 </body>
 </html>
-
