@@ -119,12 +119,21 @@ export interface TrainingResult {
 }
 
 export interface FeedbackCreateRequest {
-  prediction_accuracy: 'EXACT_MATCH' | 'NEARBY' | 'DIFFERENT' | 'UNKNOWN';
-  intervention_result: 'APPREHENDED' | 'RECOVERED' | 'BOTH' | 'UNSUCCESSFUL';
+  prediction_accuracy: 'exact_match' | 'nearby' | 'different' | 'unknown';
+  intervention_result: 'suspect_apprehended' | 'money_recovered' | 'both' | 'unsuccessful';
   amount_recovered?: number;
+  total_fraud_amount?: number;
   actual_location?: string;
-  time_accuracy?: 'ON_TIME' | 'EARLY' | 'LATE' | 'MISSED';
-  mule_detection_accuracy?: number;
+  actual_atm_id?: string;
+  actual_lat?: number;
+  actual_lon?: number;
+  actual_time?: string;
+  time_prediction_accurate?: boolean;
+  mule_detection_accurate?: boolean;
+  false_positive_accounts?: string[];
+  missed_mule_accounts?: string[];
+  response_time_minutes?: number;
+  team_id?: string;
   notes?: string;
 }
 

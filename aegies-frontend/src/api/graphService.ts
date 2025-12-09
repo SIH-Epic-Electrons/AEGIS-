@@ -97,151 +97,6 @@ export interface ServiceResponse<T> {
   error?: string;
 }
 
-// Generate mock graph data for demo
-const generateMockGraph = (caseId: string): VisualizationGraph => {
-  const mockNodes: VisualizationNode[] = [
-    {
-      id: 'ACC_VICTIM',
-      label: 'Rajesh Gupta',
-      account_id: 'ACC_VICTIM',
-      account_number: 'XXXX4521',
-      bank: 'ICICI',
-      holder_name: 'Rajesh Gupta',
-      is_mule: 0,
-      mule_probability: 0.0,
-      risk_score: 0.0,
-      node_type: 'victim',
-      color: '#22c55e',
-      size: 40,
-    },
-    {
-      id: 'ACC_MULE_1',
-      label: 'SBI Account',
-      account_id: 'ACC_MULE_1',
-      account_number: 'XXXX7832',
-      bank: 'SBI',
-      holder_name: 'Unknown',
-      is_mule: 1,
-      mule_probability: 0.92,
-      risk_score: 0.85,
-      node_type: 'mule',
-      color: '#f97316',
-      size: 35,
-    },
-    {
-      id: 'ACC_MULE_2',
-      label: 'HDFC Account',
-      account_id: 'ACC_MULE_2',
-      account_number: 'XXXX2190',
-      bank: 'HDFC',
-      holder_name: 'Unknown',
-      is_mule: 1,
-      mule_probability: 0.87,
-      risk_score: 0.78,
-      node_type: 'mule',
-      color: '#f97316',
-      size: 35,
-    },
-    {
-      id: 'ACC_MULE_3',
-      label: 'Axis Account',
-      account_id: 'ACC_MULE_3',
-      account_number: 'XXXX9876',
-      bank: 'Axis',
-      holder_name: 'Unknown',
-      is_mule: 1,
-      mule_probability: 0.79,
-      risk_score: 0.72,
-      node_type: 'mule',
-      color: '#f97316',
-      size: 35,
-    },
-    {
-      id: 'ACC_REGULAR',
-      label: 'Kotak Account',
-      account_id: 'ACC_REGULAR',
-      account_number: 'XXXX5432',
-      bank: 'Kotak',
-      holder_name: 'Unknown',
-      is_mule: 0,
-      mule_probability: 0.15,
-      risk_score: 0.2,
-      node_type: 'account',
-      color: '#3b82f6',
-      size: 30,
-    },
-  ];
-
-  const mockEdges: VisualizationEdge[] = [
-    {
-      id: `edge_${caseId}_1`,
-      source: 'ACC_VICTIM',
-      target: 'ACC_MULE_1',
-      label: '₹2,10,000 (IMPS)',
-      amount: 210000,
-      transaction_type: 'IMPS',
-      hop_number: 1,
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      width: 6,
-      color: '#94a3b8',
-    },
-    {
-      id: `edge_${caseId}_2`,
-      source: 'ACC_MULE_1',
-      target: 'ACC_MULE_2',
-      label: '₹1,00,000 (IMPS)',
-      amount: 100000,
-      transaction_type: 'IMPS',
-      hop_number: 2,
-      timestamp: new Date(Date.now() - 3000000).toISOString(),
-      width: 5,
-      color: '#94a3b8',
-    },
-    {
-      id: `edge_${caseId}_3`,
-      source: 'ACC_MULE_1',
-      target: 'ACC_MULE_3',
-      label: '₹60,000 (NEFT)',
-      amount: 60000,
-      transaction_type: 'NEFT',
-      hop_number: 2,
-      timestamp: new Date(Date.now() - 2400000).toISOString(),
-      width: 4,
-      color: '#60a5fa',
-    },
-    {
-      id: `edge_${caseId}_4`,
-      source: 'ACC_MULE_2',
-      target: 'ACC_REGULAR',
-      label: '₹40,000 (UPI)',
-      amount: 40000,
-      transaction_type: 'UPI',
-      hop_number: 3,
-      timestamp: new Date(Date.now() - 1800000).toISOString(),
-      width: 3,
-      color: '#8b5cf6',
-    },
-    {
-      id: `edge_${caseId}_5`,
-      source: 'ACC_MULE_3',
-      target: 'ACC_REGULAR',
-      label: '₹30,000 (UPI)',
-      amount: 30000,
-      transaction_type: 'UPI',
-      hop_number: 3,
-      timestamp: new Date(Date.now() - 1200000).toISOString(),
-      width: 3,
-      color: '#8b5cf6',
-    },
-  ];
-
-  return {
-    case_id: caseId,
-    case_number: `MH-2025-${String(Math.floor(Math.random() * 100000)).padStart(5, '0')}`,
-    nodes: mockNodes,
-    edges: mockEdges,
-  };
-};
 
 export const graphService = {
   /**
@@ -264,11 +119,6 @@ export const graphService = {
         },
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        return { success: true, data: generateMockGraph(caseId) };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get case graph',
@@ -290,11 +140,6 @@ export const graphService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        return { success: true, data: generateMockGraph(caseId) };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get graph visualization',
@@ -316,23 +161,6 @@ export const graphService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockGraph = generateMockGraph(caseId);
-        return {
-          success: true,
-          data: {
-            case_id: caseId,
-            transactions_traced: 5,
-            mule_accounts_detected: 3,
-            graph: {
-              nodes: mockGraph.nodes,
-              edges: mockGraph.edges,
-            },
-          },
-        };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to trace money flow',
@@ -354,36 +182,6 @@ export const graphService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        return {
-          success: true,
-          data: {
-            account_id: accountId,
-            connected_accounts: [
-              {
-                account_id: 'ACC_MULE_2',
-                bank: 'HDFC',
-                is_mule: true,
-                relationship: 'RECEIVED_FROM',
-                transaction_count: 3,
-                total_amount: 150000,
-              },
-              {
-                account_id: 'ACC_REGULAR',
-                bank: 'Kotak',
-                is_mule: false,
-                relationship: 'SENT_TO',
-                transaction_count: 2,
-                total_amount: 80000,
-              },
-            ],
-            total_transactions: 5,
-            total_amount: 230000,
-          },
-        };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get mule network',

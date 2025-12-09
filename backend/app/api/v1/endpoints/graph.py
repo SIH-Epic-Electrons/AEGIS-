@@ -50,7 +50,7 @@ router = APIRouter()
     """
 )
 async def get_case_graph(
-    case_id: UUID,
+    case_id: str,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
 ):
@@ -61,8 +61,15 @@ async def get_case_graph(
         Graph data with nodes (accounts) and edges (transactions)
         Mule accounts are highlighted
     """
-    # Get case
-    result = await db.execute(select(Case).where(Case.id == case_id))
+    # Try to parse as UUID first, if fails, try case_number
+    try:
+        case_uuid = UUID(case_id)
+        case_query = select(Case).where(Case.id == case_uuid)
+    except ValueError:
+        # Not a valid UUID, try case_number
+        case_query = select(Case).where(Case.case_number == case_id)
+    
+    result = await db.execute(case_query)
     case = result.scalar_one_or_none()
     
     if not case:
@@ -71,13 +78,26 @@ async def get_case_graph(
             detail="Case not found"
         )
     
+    # Use case.id (UUID) for Neo4j query
+    case_id_uuid = case.id
+    
     # Get graph from Neo4j
-    graph_data = Neo4jGraphService.get_case_graph(case_id)
+    try:
+        graph_data = Neo4jGraphService.get_case_graph(case_id_uuid)
+    except Exception as e:
+        # If Neo4j fails, return empty graph structure
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Neo4j graph query failed for case {case_id_uuid}: {e}")
+        graph_data = {
+            "nodes": [],
+            "edges": []
+        }
     
     return {
         "success": True,
         "data": {
-            "case_id": str(case_id),
+            "case_id": str(case_id_uuid),
             "case_number": case.case_number,
             "graph": graph_data
         }
@@ -110,7 +130,7 @@ async def get_case_graph(
     """
 )
 async def trace_money_flow(
-    case_id: UUID,
+    case_id: str,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
 ):
@@ -118,8 +138,15 @@ async def trace_money_flow(
     Trace money flow for a case using CFCFRMS simulator.
     Creates graph in Neo4j and runs mule detection.
     """
-    # Get case
-    result = await db.execute(select(Case).where(Case.id == case_id))
+    # Try to parse as UUID first, if fails, try case_number
+    try:
+        case_uuid = UUID(case_id)
+        case_query = select(Case).where(Case.id == case_uuid)
+    except ValueError:
+        # Not a valid UUID, try case_number
+        case_query = select(Case).where(Case.case_number == case_id)
+    
+    result = await db.execute(case_query)
     case = result.scalar_one_or_none()
     
     if not case:
@@ -234,7 +261,7 @@ async def get_mule_network(
     """
 )
 async def get_case_graph_visualization(
-    case_id: UUID,
+    case_id: str,   
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
 ):
@@ -243,8 +270,15 @@ async def get_case_graph_visualization(
     
     Returns graph data formatted for D3.js, vis.js, cytoscape.js, etc.
     """
-    # Get case
-    result = await db.execute(select(Case).where(Case.id == case_id))
+    # Try to parse as UUID first, if fails, try case_number
+    try:
+        case_uuid = UUID(case_id)
+        case_query = select(Case).where(Case.id == case_uuid)
+    except ValueError:
+        # Not a valid UUID, try case_number
+        case_query = select(Case).where(Case.case_number == case_id)
+    
+    result = await db.execute(case_query)
     case = result.scalar_one_or_none()
     
     if not case:
@@ -253,8 +287,21 @@ async def get_case_graph_visualization(
             detail="Case not found"
         )
     
+    # Use case.id (UUID) for Neo4j query
+    case_id_uuid = case.id
+    
     # Get graph from Neo4j
-    graph_data = Neo4jGraphService.get_case_graph(case_id)
+    try:
+        graph_data = Neo4jGraphService.get_case_graph(case_id_uuid)
+    except Exception as e:
+        # If Neo4j fails, return empty graph structure
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Neo4j graph query failed for case {case_id_uuid}: {e}")
+        graph_data = {
+            "nodes": [],
+            "edges": []
+        }
     
     # Transform to visualization format
     nodes = []
@@ -363,7 +410,7 @@ async def get_case_graph_visualization(
     viz_graph = VisualizationGraph(
         nodes=[VisualizationNode(**node) for node in nodes],
         edges=[VisualizationEdge(**edge) for edge in edges],
-        case_id=str(case_id),
+        case_id=str(case_id_uuid),
         case_number=case.case_number
     )
     

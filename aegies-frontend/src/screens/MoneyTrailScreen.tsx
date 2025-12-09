@@ -15,6 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/theme';
 import { graphService, VisualizationNode, VisualizationEdge } from '../api/graphService';
+import {
+  extractMuleAccountsFromTransactions,
+  MuleAccountFromTransaction,
+} from '../utils/muleAccountUtils';
 
 interface TransactionNode {
   id: string;
@@ -45,13 +49,14 @@ interface TransactionNode {
     splitCount: number;
     splitAmounts: Array<{ account: string; amount: number; index: number }>;
   };
+  isFraudster?: boolean; // Flag to highlight fraudster account
 }
 
 export default function MoneyTrailScreen() {
   const { theme } = useTheme();
   const route = useRoute();
   const navigation = useNavigation();
-  const { caseId } = route.params as any;
+  const { caseId, muleAccounts: routeMuleAccounts } = route.params as any;
 
   const [loading, setLoading] = useState(true);
   // totalAmount: The TOTAL amount lost by the victim (fraud_amount from case)
@@ -60,6 +65,9 @@ export default function MoneyTrailScreen() {
   // atRiskAmount: Amount currently at risk (in active mule accounts)
   const [atRiskAmount, setAtRiskAmount] = useState(210000);
   const [transactions, setTransactions] = useState<TransactionNode[]>([]);
+  const [muleAccountsForFreeze, setMuleAccountsForFreeze] = useState<
+    MuleAccountFromTransaction[]
+  >([]);
   const [cstPrediction, setCstPrediction] = useState<any>(null); // CST prediction data
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -115,9 +123,43 @@ export default function MoneyTrailScreen() {
         const txns = response.data.transactions;
         const splits = response.data.splits || {};
         
-        // Transform transactions to transaction nodes, passing original fraud amount
-        const transactionNodes = transformTransactionsToNodes(txns, splits, originalFraudAmount);
+        // Create a map of mule account statuses from route params (if provided)
+        const muleStatusMap = new Map<string, 'active' | 'frozen' | 'withdrawn'>();
+        if (routeMuleAccounts && Array.isArray(routeMuleAccounts)) {
+          routeMuleAccounts.forEach((acc: any) => {
+            // Match by account ID (most reliable)
+            if (acc.id) {
+              muleStatusMap.set(acc.id, acc.status || 'active');
+            }
+            // Match by last 4 digits of account number (for masked format XXXX1234)
+            if (acc.accountNumber) {
+              const last4Digits = acc.accountNumber.replace(/[^0-9]/g, '').slice(-4);
+              if (last4Digits) {
+                muleStatusMap.set(last4Digits, acc.status || 'active');
+              }
+              // Also store the full masked account number for matching
+              muleStatusMap.set(acc.accountNumber, acc.status || 'active');
+            }
+          });
+        }
+        
+        // Transform transactions to transaction nodes, passing original fraud amount and status map
+        const transactionNodes = transformTransactionsToNodes(txns, splits, originalFraudAmount, muleStatusMap);
         setTransactions(transactionNodes);
+        // Build mule account list to pass to MuleAccounts screen so data matches
+        const extractedAccounts = extractMuleAccountsFromTransactions(txns, true).map((acc) => {
+          const last4 = String(acc.id || '').slice(-4);
+          const overrideStatus =
+            muleStatusMap.get(acc.id) ||
+            muleStatusMap.get(last4) ||
+            muleStatusMap.get(acc.accountNumber) ||
+            acc.status;
+          return {
+            ...acc,
+            status: overrideStatus || acc.status,
+          };
+        });
+        setMuleAccountsForFreeze(extractedAccounts);
         
         // CRITICAL: Always use original fraud_amount as the total (amount lost by victim)
         // This is the correct total, not the sum of transactions (which may have commissions deducted)
@@ -173,38 +215,30 @@ export default function MoneyTrailScreen() {
           setAtRiskAmount(totalToUse * 0.7);
         }
       } else {
-        // Fallback to graph service or default
-        try {
-          const traceResponse = await graphService.traceMoneyFlow(caseId || 'default');
-          if (traceResponse.success && traceResponse.data) {
-            const vizResponse = await graphService.getCaseGraphVisualization(caseId || 'default');
-            if (vizResponse.success && vizResponse.data) {
-              const graphData = vizResponse.data;
-              const mappedNodes = transformGraphToTransactions(graphData.nodes, graphData.edges);
-              setTransactions(mappedNodes);
-              const total = graphData.edges.reduce((sum, edge) => sum + (edge.amount || 0), 0);
-              setTotalAmount(total > 0 ? total : 350000);
-              setAtRiskAmount(total * 0.6);
-            } else {
-              setTransactions(getDefaultTransactions());
-            }
-          } else {
-            setTransactions(getDefaultTransactions());
-          }
-        } catch {
-          setTransactions(getDefaultTransactions());
-        }
+        // No transactions found - show empty state
+        console.log('No transactions found for case:', caseId);
+        setTransactions([]);
+        setTotalAmount(0);
+        setAtRiskAmount(0);
       }
     } catch (error) {
       console.error('Error loading money trail:', error);
-      setTransactions(getDefaultTransactions());
+      // Show empty state on error, don't use dummy data
+      setTransactions([]);
+      setTotalAmount(0);
+      setAtRiskAmount(0);
     } finally {
       setLoading(false);
     }
   };
   
   // Transform API transactions to display nodes
-  const transformTransactionsToNodes = (transactions: any[], splits: any, originalFraudAmount: number | null = null): TransactionNode[] => {
+  const transformTransactionsToNodes = (
+    transactions: any[], 
+    splits: any, 
+    originalFraudAmount: number | null = null,
+    muleAccountsStatusMap: Map<string, 'active' | 'frozen' | 'withdrawn'> = new Map()
+  ): TransactionNode[] => {
     const nodes: TransactionNode[] = [];
     const processedAccounts = new Set<string>();
     const splitGroups = new Map<string, any[]>();
@@ -282,6 +316,13 @@ export default function MoneyTrailScreen() {
             ? 'Fraudster Account' 
             : `${txn.to_holder_name || txn.to_bank} Account`;
           
+          // Use status from muleAccountsStatusMap if available, otherwise from transaction
+          // Try matching by: 1) full account number, 2) account ID, 3) last 4 digits
+          const accountStatus = muleAccountsStatusMap.get(txn.to_account) || 
+                                muleAccountsStatusMap.get(txn.id) ||
+                                muleAccountsStatusMap.get(txn.to_account.slice(-4)) ||
+                                (txn.status === 'FROZEN' ? 'frozen' : txn.status === 'WITHDRAWN' ? 'withdrawn' : 'active');
+          
           nodes.push({
             id: txn.id,
             type: 'mule',
@@ -289,7 +330,7 @@ export default function MoneyTrailScreen() {
             bank: txn.to_bank,
             accountNumber: txn.to_account ? `XXXX${txn.to_account.slice(-4)}` : 'XXXX',
             amount: splitAmount,
-            status: txn.status === 'FROZEN' ? 'frozen' : txn.status === 'WITHDRAWN' ? 'withdrawn' : 'active',
+            status: accountStatus,
             timestamp: formatTimeFromISO(txn.timestamp),
             muleNumber: isFraudster ? 'FRAUDSTER' : `M${muleIndex++}`,
             balanceBefore: firstSplitTxn.to_balance_before,
@@ -317,6 +358,13 @@ export default function MoneyTrailScreen() {
           ? 'Fraudster Account' 
           : `${txn.to_holder_name || txn.to_bank} Account`;
         
+        // Use status from muleAccountsStatusMap if available, otherwise from transaction
+        // Try matching by: 1) full account number, 2) account ID, 3) last 4 digits
+        const accountStatus = muleAccountsStatusMap.get(txn.to_account) || 
+                              muleAccountsStatusMap.get(txn.id) ||
+                              muleAccountsStatusMap.get(txn.to_account.slice(-4)) ||
+                              (txn.status === 'FROZEN' ? 'frozen' : txn.status === 'WITHDRAWN' ? 'withdrawn' : 'active');
+        
         nodes.push({
           id: txn.id,
           type: 'mule',
@@ -324,7 +372,7 @@ export default function MoneyTrailScreen() {
           bank: txn.to_bank,
           accountNumber: txn.to_account ? `XXXX${txn.to_account.slice(-4)}` : 'XXXX',
           amount: txn.amount,
-          status: txn.status === 'FROZEN' ? 'frozen' : txn.status === 'WITHDRAWN' ? 'withdrawn' : 'active',
+          status: accountStatus,
           timestamp: formatTimeFromISO(txn.timestamp),
           muleNumber: isFraudster ? 'FRAUDSTER' : `M${muleIndex++}`,
           balanceBefore: txn.to_balance_before,
@@ -374,7 +422,7 @@ export default function MoneyTrailScreen() {
       }
     }
     
-    return nodes.length > 0 ? nodes : getDefaultTransactions();
+    return nodes; // Return empty array if no nodes, don't use default data
   };
 
   // Transform graph visualization data to transaction nodes for linear display
@@ -472,7 +520,7 @@ export default function MoneyTrailScreen() {
       }
     }
     
-    return transactionNodes.length > 0 ? transactionNodes : getDefaultTransactions();
+    return transactionNodes; // Return empty array if no nodes, don't use default data
   };
 
   const formatTimeFromISO = (isoString: string): string => {
@@ -484,71 +532,7 @@ export default function MoneyTrailScreen() {
     }
   };
 
-  const getDefaultTransactions = (): TransactionNode[] => [
-    {
-      id: 'victim',
-      type: 'victim',
-      name: 'Rajesh Gupta',
-      bank: 'ICICI Bank',
-      accountNumber: 'XXXX4521',
-      amount: 350000,
-      status: 'active',
-      timestamp: '10:22 AM',
-    },
-    {
-      id: 'm1',
-      type: 'mule',
-      name: 'SBI Account',
-      bank: 'SBI',
-      accountNumber: 'XXXX XXXX 4521',
-      amount: 210000,
-      status: 'active',
-      timestamp: '10:24 AM',
-      location: 'Mumbai',
-      muleNumber: 'M1',
-    },
-    {
-      id: 'm2',
-      type: 'mule',
-      name: 'HDFC Account',
-      bank: 'HDFC',
-      accountNumber: 'XXXX XXXX 7832',
-      amount: 100000,
-      status: 'active',
-      timestamp: '10:31 AM',
-      location: 'Thane, Maharashtra',
-      muleNumber: 'M2',
-    },
-    {
-      id: 'm3',
-      type: 'mule',
-      name: 'Axis Account',
-      bank: 'AXIS',
-      accountNumber: 'XXXX XXXX 2190',
-      amount: 40000,
-      status: 'withdrawn',
-      timestamp: '10:38 AM',
-      location: 'Navi Mumbai',
-      muleNumber: 'M3',
-      withdrawalInfo: 'Withdrawn at 10:52 AM • ATM Vashi',
-    },
-    {
-      id: 'predicted',
-      type: 'predicted',
-      name: 'Likely Cash-Out Location',
-      accountNumber: '',
-      amount: 210000,
-      status: 'active',
-      timestamp: 'In ~25 mins',
-      location: cstPrediction?.address || cstPrediction?.name || 'Location prediction pending...',
-      locationData: cstPrediction ? {
-        city: cstPrediction.city,
-        state: cstPrediction.state,
-        latitude: cstPrediction.lat,
-        longitude: cstPrediction.lon,
-      } : undefined,
-    },
-  ];
+  // Removed getDefaultTransactions - always use API data
 
   const formatAmount = (amount: number) => {
     if (amount >= 100000) {
@@ -615,6 +599,7 @@ export default function MoneyTrailScreen() {
     // @ts-ignore - React Navigation type inference limitation
     navigation.navigate('MuleAccounts' as never, {
       caseId,
+      muleAccounts: muleAccountsForFreeze,
     } as never);
   };
 
@@ -633,7 +618,7 @@ export default function MoneyTrailScreen() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
         <TouchableOpacity
-          style={[styles.backButton, { backgroundColor: theme.colors.backgroundSecondary }]}
+          style={[styles.backButton, { backgroundColor: theme.colors.surface }]}
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
@@ -692,11 +677,20 @@ export default function MoneyTrailScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.flowContainer}>
-          {/* Vertical Line */}
-          <View style={styles.verticalLine} />
+        {transactions.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="alert-circle-outline" size={48} color="#9ca3af" />
+            <Text style={styles.emptyStateTitle}>No Money Trail Data</Text>
+            <Text style={styles.emptyStateText}>
+              Money flow tracing is in progress. Transactions will appear here once CFCFRMS completes the trace.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.flowContainer}>
+            {/* Vertical Line */}
+            <View style={styles.verticalLine} />
 
-          {transactions.map((node, index) => {
+            {transactions.map((node, index) => {
             const nodeColor = getNodeColor(node.type, node.status, node.isFraudster);
             const statusBadge = getStatusBadge(node.type, node.status, node.mule_probability, node.isFraudster);
             const isPredicted = node.type === 'predicted';
@@ -843,8 +837,9 @@ export default function MoneyTrailScreen() {
                 )}
               </React.Fragment>
             );
-          })}
-        </View>
+            })}
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Actions */}
@@ -1119,5 +1114,24 @@ const styles = StyleSheet.create({
   splitText: {
     fontSize: 11,
     fontStyle: 'italic',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

@@ -44,7 +44,7 @@ router = APIRouter()
     """
 )
 async def get_case_prediction(
-    case_id: UUID,
+    case_id: str,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
 ):
@@ -58,10 +58,15 @@ async def get_case_prediction(
     - Risk assessment
     - Explainability factors
     """
-    # Get case
-    result = await db.execute(
-        select(Case).where(Case.id == case_id)
-    )
+    # Try to parse as UUID first, if fails, try case_number
+    try:
+        case_uuid = UUID(case_id)
+        case_query = select(Case).where(Case.id == case_uuid)
+    except ValueError:
+        # Not a valid UUID, try case_number
+        case_query = select(Case).where(Case.case_number == case_id)
+    
+    result = await db.execute(case_query)
     case = result.scalar_one_or_none()
     
     if not case:
@@ -130,6 +135,19 @@ async def get_case_prediction(
             
             if primary:
                 logger.info(f"Primary CST prediction for case {case_id}: {primary.get('name')} (confidence: {primary.get('confidence')}%)")
+            
+            # If address is missing, try reverse geocoding
+            if primary and not primary.get("address") and primary.get("lat") and primary.get("lon"):
+                from app.services.geocoding_service import get_geocoding_service
+                geocoder = get_geocoding_service()
+                geocode_result = await geocoder.reverse_geocode(
+                    primary.get("lat"),
+                    primary.get("lon")
+                )
+                if geocode_result:
+                    primary["address"] = geocode_result.get("address") or geocode_result.get("formatted_address")
+                    primary["city"] = geocode_result.get("city", primary.get("city"))
+                    primary["state"] = geocode_result.get("state", primary.get("state"))
             
             location_prediction = {
                 "primary": {

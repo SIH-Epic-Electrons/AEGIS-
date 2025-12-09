@@ -21,6 +21,7 @@ import WebSocketStatusIndicator from '../components/WebSocketStatusIndicator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { caseService } from '../api';
 import { predictionService } from '../api';
+import { extractMuleAccountsFromTransactions, transformApiMuleAccount } from '../utils/muleAccountUtils';
 
 interface MuleAccount {
   id: string;
@@ -190,79 +191,87 @@ export default function CaseDetailScreen() {
       }
 
       // 3. Load mule accounts from API
-      // First try to get from mule accounts endpoint
+      // First try to get from mule accounts endpoint (use getCaseMuleAccounts for consistency)
       try {
-        const muleResult = await caseService.getMuleAccounts(effectiveCaseId);
-        if (muleResult.success && muleResult.data?.mule_accounts) {
-          const accounts: MuleAccount[] = muleResult.data.mule_accounts.map((acc: any) => ({
-            id: acc.id,
-            bank: acc.bank_name || acc.bank || 'Unknown',
-            bankName: acc.bank_name || acc.bank || 'Unknown Bank',
-            accountNumber: acc.account_number ? `XXXX${acc.account_number.slice(-4)}` : 'N/A',
-            amount: acc.amount_received || 0,
-            amountReceived: acc.amount_received || 0,
-            currentBalance: acc.current_balance || 0,
-            accountHolder: acc.holder_name || 'Unknown',
-            ifscCode: acc.ifsc_code || 'XXXX0000000',
-            accountAge: 'Unknown',
-            location: 'Unknown',
-            status: (acc.status === 'FROZEN' ? 'frozen' : acc.status === 'WITHDRAWN' ? 'withdrawn' : 'active') as 'active' | 'withdrawn' | 'frozen',
-          }));
+        const muleResult = await caseService.getCaseMuleAccounts(effectiveCaseId);
+        if (muleResult.success && muleResult.data?.mule_accounts && muleResult.data.mule_accounts.length > 0) {
+          // Transform API response to consistent format
+          const accounts: MuleAccount[] = muleResult.data.mule_accounts.map((acc: any) => {
+            const transformed = transformApiMuleAccount(acc);
+            return {
+              id: transformed.id,
+              bank: transformed.bank,
+              bankName: transformed.bankName,
+              accountNumber: transformed.accountNumber,
+              amount: transformed.amountReceived,
+              amountReceived: transformed.amountReceived,
+              currentBalance: transformed.currentBalance,
+              accountHolder: transformed.accountHolder,
+              ifscCode: transformed.ifscCode,
+              accountAge: transformed.accountAge,
+              location: transformed.location,
+              status: transformed.status,
+              hopNumber: transformed.hopNumber,
+            };
+          });
+          console.log('✅ Loaded mule accounts from API endpoint:', accounts.length, 'accounts');
+          console.log('📊 Mule accounts data:', JSON.stringify(accounts, null, 2));
+          accounts.forEach(acc => {
+            console.log(`  → Account ${acc.id}: ${acc.bank} - ${acc.accountNumber} - Status: ${acc.status}`);
+          });
           setMuleAccounts(accounts);
         } else {
-          // Fallback: Try to get mule accounts from transactions (money trail)
+          // Fallback: Extract mule accounts from transactions (from CFCFRMS flow)
+          console.log('Mule accounts endpoint returned no data, extracting from transactions...');
           try {
             const transactionsResult = await caseService.getCaseTransactions(effectiveCaseId);
-            if (transactionsResult.success && transactionsResult.data?.transactions) {
-              // Extract unique mule accounts from transactions
-              const accountMap = new Map<string, MuleAccount>();
+            if (transactionsResult.success && transactionsResult.data?.transactions && transactionsResult.data.transactions.length > 0) {
+              // Use shared utility to extract mule accounts consistently
+              const extractedAccounts = extractMuleAccountsFromTransactions(
+                transactionsResult.data.transactions,
+                true // Skip victim account
+              );
               
-              transactionsResult.data.transactions.forEach((txn: any) => {
-                const toAccount = txn.to_account;
-                if (toAccount) {
-                  if (!accountMap.has(toAccount)) {
-                    // Use actual balance from transaction if available
-                    const balance = txn.to_balance_after !== undefined && txn.to_balance_after !== null
-                      ? txn.to_balance_after
-                      : (txn.amount ? txn.amount * 0.8 : 0); // Fallback estimate
-                    
-                    accountMap.set(toAccount, {
-                      id: toAccount,
-                      bank: txn.to_bank || 'Unknown',
-                      bankName: txn.to_bank || 'Unknown Bank',
-                      accountNumber: toAccount ? `XXXX${toAccount.slice(-4)}` : 'N/A',
-                      amount: txn.amount || 0,
-                      amountReceived: txn.amount || 0,
-                      currentBalance: balance, // Use actual balance from transaction
-                      accountHolder: txn.to_holder_name || 'Unknown',
-                      ifscCode: 'XXXX0000000',
-                      accountAge: 'Unknown',
-                      location: txn.to_location ? `${txn.to_location.city || ''}, ${txn.to_location.state || ''}`.trim() : 'Unknown',
-                      status: 'active' as const,
-                    });
-                  } else {
-                    // Update existing account: use latest balance (highest hop number)
-                    const existing = accountMap.get(toAccount)!;
-                    const existingHop = existing.hopNumber || 0;
-                    if (txn.hop_number > existingHop && txn.to_balance_after !== undefined && txn.to_balance_after !== null) {
-                      existing.currentBalance = txn.to_balance_after;
-                      existing.hopNumber = txn.hop_number;
-                    }
-                    existing.amount += txn.amount || 0;
-                    existing.amountReceived += txn.amount || 0;
-                  }
-                }
-              });
+              // Transform to MuleAccount format
+              const accounts: MuleAccount[] = extractedAccounts.map(acc => ({
+                id: acc.id,
+                bank: acc.bank,
+                bankName: acc.bankName,
+                accountNumber: acc.accountNumber,
+                amount: acc.amountReceived,
+                amountReceived: acc.amountReceived,
+                currentBalance: acc.currentBalance,
+                accountHolder: acc.accountHolder,
+                ifscCode: acc.ifscCode,
+                accountAge: acc.accountAge,
+                location: acc.location,
+                status: acc.status,
+                hopNumber: acc.hopNumber,
+              }));
               
-              setMuleAccounts(Array.from(accountMap.values()));
+              if (accounts.length > 0) {
+                console.log('✅ Extracted mule accounts from transactions:', accounts.length, 'accounts');
+                console.log('📊 Extracted accounts data:', JSON.stringify(accounts, null, 2));
+                accounts.forEach(acc => {
+                  console.log(`  → Account ${acc.id}: ${acc.bank} - ${acc.accountNumber} - Status: ${acc.status}`);
+                });
+                setMuleAccounts(accounts);
+              } else {
+                console.log('No mule accounts found in transactions');
+                setMuleAccounts([]);
+              }
+            } else {
+              console.log('No transactions found for case');
+              setMuleAccounts([]);
             }
           } catch (txnError) {
             console.warn('Failed to load mule accounts from transactions:', txnError);
+            setMuleAccounts([]);
           }
         }
       } catch (muleError) {
         console.warn('Failed to load mule accounts:', muleError);
-        // Continue without mule accounts - will show empty state
+        setMuleAccounts([]);
       }
 
       // 3b. Load prediction data from CST model
@@ -292,6 +301,28 @@ export default function CaseDetailScreen() {
             
             // Validate coordinates are present
             if (primary.lat && primary.lon) {
+              // If address is missing, try reverse geocoding
+              if (!primary.address || primary.address === '' || primary.name === 'Unknown ATM') {
+                try {
+                  const { reverseGeocodingService } = await import('../services/reverseGeocodingService');
+                  const geocodeResult = await reverseGeocodingService.reverseGeocode(primary.lat, primary.lon);
+                  if (geocodeResult.success && geocodeResult.data) {
+                    primary.address = geocodeResult.data.address || geocodeResult.data.formatted_address;
+                    primary.city = geocodeResult.data.city || primary.city;
+                    if (geocodeResult.data.state) {
+                      primary.state = geocodeResult.data.state;
+                    }
+                    // Update name if it's "Unknown ATM"
+                    if (primary.name === 'Unknown ATM' && geocodeResult.data.city) {
+                      primary.name = `ATM near ${geocodeResult.data.city}`;
+                    }
+                    console.log('Reverse geocoded address:', geocodeResult.data.address);
+                  }
+                } catch (geocodeError) {
+                  console.warn('Reverse geocoding failed:', geocodeError);
+                }
+              }
+              
               console.log('CST prediction coordinates:', {
                 lat: primary.lat,
                 lon: primary.lon,
@@ -464,75 +495,61 @@ export default function CaseDetailScreen() {
   };
 
   const handleFreezeAccounts = () => {
-    const currentCaseId = effectiveCaseId || caseData?.id || '1';
+    const currentCaseId = effectiveCaseId || (caseData as any)?.case_id || caseData?.id;
     
-    // Prepare mule accounts data - ensure we have accounts to pass
-    // Map existing mule accounts to full format, or use defaults
-    const accountsToPass: any[] = muleAccounts.length > 0 
-      ? muleAccounts.map(acc => ({
-          id: acc.id,
-          bank: acc.bank,
-          bankName: acc.bankName || (acc.bank === 'SBI' ? 'State Bank of India' : acc.bank === 'HDFC' ? 'HDFC Bank' : acc.bank === 'AXIS' ? 'Axis Bank' : 'Bank'),
-          accountNumber: acc.accountNumber,
-          amountReceived: acc.amountReceived || acc.amount || 0,
-          currentBalance: acc.currentBalance || 0,
-          accountHolder: acc.accountHolder || 'Unknown',
-          ifscCode: acc.ifscCode || 'XXXX0000000',
-          accountAge: acc.accountAge || 'Unknown',
-          location: acc.location || 'Unknown',
-          status: acc.status,
-        }))
-      : [
-          {
-            id: '1',
-            bank: 'SBI',
-            bankName: 'State Bank of India',
-            accountNumber: 'XXXX XXXX 4521',
-            amountReceived: 210000,
-            currentBalance: 208500,
-            accountHolder: 'Suresh K***r',
-            ifscCode: 'SBIN0001234',
-            accountAge: '23 days (New)',
-            location: 'Andheri, Mumbai',
-            status: 'active' as const,
-          },
-          {
-            id: '2',
-            bank: 'HDFC',
-            bankName: 'HDFC Bank',
-            accountNumber: 'XXXX XXXX 7832',
-            amountReceived: 100000,
-            currentBalance: 98200,
-            accountHolder: 'Ram***n P.',
-            ifscCode: 'HDFC0005678',
-            accountAge: '45 days (New)',
-            location: 'Thane, Maharashtra',
-            status: 'active' as const,
-          },
-          {
-            id: '3',
-            bank: 'AXIS',
-            bankName: 'Axis Bank',
-            accountNumber: 'XXXX XXXX 2190',
-            amountReceived: 40000,
-            currentBalance: 0,
-            accountHolder: 'Unknown',
-            ifscCode: 'UTIB0001234',
-            accountAge: '60 days',
-            location: 'Vashi, Navi Mumbai',
-            status: 'withdrawn' as const,
-          },
-        ];
+    if (!currentCaseId) {
+      Alert.alert('Error', 'No case ID available. Please go back and try again.');
+      return;
+    }
+    
+    console.log('🚀 Navigating to MuleAccountsScreen with', muleAccounts.length, 'accounts');
+    console.log('📊 Current mule accounts state:', JSON.stringify(muleAccounts, null, 2));
+    
+    // Prepare mule accounts data - only use real API data, no defaults
+    if (muleAccounts.length === 0) {
+      console.warn('⚠️ No mule accounts available to pass to MuleAccountsScreen');
+      Alert.alert(
+        'No Mule Accounts',
+        'Mule accounts have not been identified yet. Money flow tracing may still be in progress.',
+        [{ text: 'OK' }]
+      );
+      return; // Don't navigate if no data
+    }
+    
+    // Map existing mule accounts to full format
+    const accountsToPass: any[] = muleAccounts.map(acc => {
+      const mapped = {
+        id: acc.id,
+        bank: acc.bank,
+        bankName: acc.bankName || (acc.bank === 'SBI' ? 'State Bank of India' : acc.bank === 'HDFC' ? 'HDFC Bank' : acc.bank === 'AXIS' ? 'Axis Bank' : 'Bank'),
+        accountNumber: acc.accountNumber,
+        amountReceived: acc.amountReceived || acc.amount || 0,
+        currentBalance: acc.currentBalance || 0,
+        accountHolder: acc.accountHolder || 'Unknown',
+        ifscCode: acc.ifscCode || 'XXXX0000000',
+        accountAge: acc.accountAge || 'Unknown',
+        location: acc.location || 'Unknown',
+        status: acc.status, // CRITICAL: Preserve exact status
+      };
+      console.log(`  → Passing account ${mapped.id}: ${mapped.bank} - ${mapped.accountNumber} - Status: ${mapped.status}`);
+      return mapped;
+    });
+    
+    console.log('📤 Final accounts to pass:', JSON.stringify(accountsToPass, null, 2));
     
     // @ts-ignore - React Navigation type inference limitation
     navigation.navigate('MuleAccounts' as never, {
       caseId: currentCaseId,
-      muleAccounts: accountsToPass,
+      muleAccounts: accountsToPass, // Pass the exact same data with status
     } as never);
   };
 
   const handleAlertTeams = () => {
-    const currentCaseId = effectiveCaseId || caseData?.id || '1';
+    const currentCaseId = effectiveCaseId || (caseData as any)?.case_id || caseData?.id;
+    if (!currentCaseId) {
+      Alert.alert('Error', 'No case ID available. Please go back and try again.');
+      return;
+    }
     // Navigate using parent Stack Navigator
     const parent = navigation.getParent();
     // @ts-ignore - React Navigation type inference limitation
@@ -542,7 +559,11 @@ export default function CaseDetailScreen() {
   };
 
   const handleViewMap = () => {
-    const currentCaseId = effectiveCaseId || caseData?.id || '1';
+    const currentCaseId = effectiveCaseId || (caseData as any)?.case_id || caseData?.id;
+    if (!currentCaseId) {
+      Alert.alert('Error', 'No case ID available. Please go back and try again.');
+      return;
+    }
     const location = caseData?.prediction?.hotspots?.[0] || displayData?.predictedLocation || {
       latitude: 19.1364,
       longitude: 72.8297,
@@ -555,31 +576,39 @@ export default function CaseDetailScreen() {
   };
 
   const handleViewMoneyTrail = async () => {
-    const currentCaseId = effectiveCaseId || caseData?.id || '1';
+    const currentCaseId = effectiveCaseId || (caseData as any)?.case_id || caseData?.id;
+    if (!currentCaseId) {
+      Alert.alert('Error', 'No case ID available. Please go back and try again.');
+      return;
+    }
     try {
       // Load transactions from API
       const transactionsResult = await caseService.getCaseTransactions(currentCaseId);
       if (transactionsResult.success && transactionsResult.data?.transactions) {
+        // Pass mule accounts data to ensure status consistency
         // @ts-expect-error - React Navigation type inference limitation
         navigation.navigate('MoneyTrail' as never, { 
           caseId: currentCaseId,
           transactions: transactionsResult.data.transactions,
+          muleAccounts: muleAccounts, // Pass current mule accounts with their status
         } as never);
       } else {
-        // Navigate with empty transactions if API fails
+        // Navigate with empty transactions if API fails, but still pass mule accounts
         // @ts-expect-error - React Navigation type inference limitation
         navigation.navigate('MoneyTrail' as never, { 
           caseId: currentCaseId,
           transactions: [],
+          muleAccounts: muleAccounts, // Pass current mule accounts with their status
         } as never);
       }
     } catch (error) {
       console.error('Error loading transactions:', error);
-      // Navigate anyway with empty transactions
+      // Navigate anyway with empty transactions, but pass mule accounts
       // @ts-expect-error - React Navigation type inference limitation
       navigation.navigate('MoneyTrail' as never, { 
         caseId: currentCaseId,
         transactions: [],
+        muleAccounts: muleAccounts, // Pass current mule accounts with their status
       } as never);
     }
   };
@@ -626,8 +655,8 @@ export default function CaseDetailScreen() {
   const caseDataAny = caseData as any;
   
   const displayData: any = caseData || alert || {
-    id: effectiveCaseId || '1',
-    caseNumber: alertAny?.caseNumber || caseDataAny?.case_number || `#CASE-${effectiveCaseId}`,
+    id: effectiveCaseId || 'unknown',
+    caseNumber: alertAny?.caseNumber || caseDataAny?.case_number || `#CASE-${effectiveCaseId || 'unknown'}`,
     fraudType: alertAny?.fraudType || caseDataAny?.complaint?.fraud_type || caseDataAny?.fraud_type || 'OTP/Vishing Fraud',
     amount: alertAny?.amount || caseDataAny?.complaint?.fraud_amount || caseDataAny?.fraud_amount || 350000,
     reportedAt: formatReportedAt(

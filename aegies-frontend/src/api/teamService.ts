@@ -97,39 +97,6 @@ export const teamService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockTeams: Team[] = [
-          {
-            id: 'team-1',
-            team_code: 'ALPHA-01',
-            team_name: 'Alpha Squad',
-            status: 'AVAILABLE',
-            members_count: 4,
-            current_location: {
-              lat: 19.076,
-              lon: 72.8777,
-            },
-            radio_channel: 'Channel 5',
-            vehicle_number: 'MH-01-AB-1234',
-          },
-          {
-            id: 'team-2',
-            team_code: 'BRAVO-02',
-            team_name: 'Bravo Squad',
-            status: 'DEPLOYED',
-            members_count: 3,
-            current_location: {
-              lat: 19.2183,
-              lon: 72.9781,
-            },
-            radio_channel: 'Channel 7',
-            vehicle_number: 'MH-01-CD-5678',
-          },
-        ];
-        return { success: true, data: { teams: mockTeams } };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to list teams',
@@ -148,24 +115,6 @@ export const teamService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockTeam: Team = {
-          id: teamId,
-          team_code: 'ALPHA-01',
-          team_name: 'Alpha Squad',
-          status: 'AVAILABLE',
-          members_count: 4,
-          current_location: {
-            lat: 19.076,
-            lon: 72.8777,
-          },
-          radio_channel: 'Channel 5',
-          vehicle_number: 'MH-01-AB-1234',
-        };
-        return { success: true, data: mockTeam };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get team details',
@@ -178,30 +127,24 @@ export const teamService = {
    */
   async deployTeam(teamId: string, deployData: DeployTeamRequest): Promise<ServiceResponse<DeployTeamResponse>> {
     try {
+      // Transform request to match backend format
+      const backendRequest = {
+        case_id: deployData.case_id,
+        target_lat: deployData.target_location.lat,
+        target_lon: deployData.target_location.lon,
+        priority: deployData.priority || 'HIGH',
+        instructions: deployData.instructions,
+      };
+      
       const response = await api.post<{ success: boolean; data: DeployTeamResponse }>(
         `/teams/${teamId}/deploy`,
-        deployData
+        backendRequest
       );
       return {
         success: true,
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockResponse: DeployTeamResponse = {
-          deployment_id: 'deploy-' + Date.now(),
-          team_id: teamId,
-          team_name: 'Alpha Squad',
-          status: 'DEPLOYED',
-          target_location: deployData.target_location,
-          eta_minutes: 12,
-          notification_sent: true,
-          timestamp: new Date().toISOString(),
-        };
-        return { success: true, data: mockResponse };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to deploy team',
@@ -220,11 +163,6 @@ export const teamService = {
         data: response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        return { success: true, data: { success: true } };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to send message',

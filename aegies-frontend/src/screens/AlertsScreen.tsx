@@ -109,7 +109,7 @@ export default function AlertsScreen() {
       
       // Build query params based on filter
       const params: any = {
-        limit: 50, // Increased to show more cases
+        limit: 100, // Increased to show all cases
         offset: 0,
       };
       
@@ -117,16 +117,16 @@ export default function AlertsScreen() {
       if (activeFilter === 'resolved') {
         params.status = 'RESOLVED';
       } else if (activeFilter === 'all') {
-        // Show all active cases (exclude resolved/closed)
+        // Show ALL cases (including resolved/closed) - don't filter by status
         // Backend will sort by priority score automatically
-        // No status filter = all active statuses
+        // No status filter = all statuses (ACTIVE, RESOLVED, CLOSED, etc.)
       } else {
         // For specific priority filters, filter by priority
         const priorityFilter = mapFilterToPriority(activeFilter);
         if (priorityFilter) {
           params.priority = priorityFilter;
         }
-        // Don't filter by status - show all active cases with that priority
+        // Don't filter by status - show all cases with that priority (including resolved)
         // Backend will sort by priority score automatically
       }
       

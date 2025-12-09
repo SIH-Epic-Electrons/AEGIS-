@@ -43,6 +43,7 @@ export interface LocationPrediction {
     distance_km: number;
     bank: string;
     city: string;
+    state?: string;
   };
   alternatives: Array<{
     name: string;
@@ -98,47 +99,6 @@ export const predictionService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockPrediction: CasePrediction = {
-          case_id: caseId,
-          prediction_id: 'pred-' + Date.now(),
-          location_prediction: {
-            primary: {
-              atm_id: 'atm-1',
-              name: 'SBI ATM Thane West',
-              address: 'Station Road, Thane',
-              lat: 19.2183,
-              lon: 72.9781,
-              confidence: 0.87,
-              distance_km: 25.3,
-              bank: 'SBI',
-              city: 'Thane',
-            },
-            alternatives: [
-              {
-                name: 'HDFC ATM Kalyan',
-                bank: 'HDFC',
-                city: 'Kalyan',
-                confidence: 0.73,
-                distance_km: 42.1,
-              },
-            ],
-          },
-          time_prediction: {
-            window_start: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-            window_end: new Date(Date.now() + 45 * 60 * 1000).toISOString(),
-            confidence: 0.87,
-          },
-          model_info: {
-            model_name: 'CST-Transformer',
-            version: 'v1.0',
-            mode: 'ATM',
-          },
-        };
-        return { success: true, data: mockPrediction };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get prediction',
@@ -163,17 +123,6 @@ export const predictionService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        return {
-          success: true,
-          data: {
-            message: 'Feedback recorded. Thank you for helping improve AEGIS!',
-            prediction_id: predictionId,
-          },
-        };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to submit feedback',

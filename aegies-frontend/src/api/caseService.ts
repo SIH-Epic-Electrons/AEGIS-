@@ -219,22 +219,6 @@ export const caseService = {
       };
     } catch (error: any) {
       console.error('NCRP submission error:', error.response?.data || error.message);
-      
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo when backend is unavailable
-        const mockResponse: CreateCaseResponse = {
-          case_id: 'ncrp-case-' + Date.now(),
-          case_number: `MH-2025-${String(Math.floor(Math.random() * 100000)).padStart(5, '0')}`,
-          status: 'NEW',
-          priority: caseData.fraud_amount >= 100000 ? 'HIGH' : 'MEDIUM',
-          message: 'Your complaint has been registered successfully. LEA officers have been notified and AI analysis is in progress.',
-          estimated_analysis_time_seconds: 30,
-          helpline: '1930',
-          tracking_note: 'Please save your Case Number for future reference.',
-        };
-        return { success: true, data: mockResponse };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to submit complaint',
@@ -254,19 +238,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockResponse: CreateCaseResponse = {
-          case_id: 'mock-case-' + Date.now(),
-          case_number: `MH-2025-${String(Math.floor(Math.random() * 100000)).padStart(5, '0')}`,
-          status: 'NEW',
-          priority: 'HIGH',
-          message: 'Case created. AI analysis in progress.',
-          estimated_analysis_time_seconds: 30,
-        };
-        return { success: true, data: mockResponse };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to create case',
@@ -292,38 +263,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockResponse: CasesListResponse = {
-          cases: [
-            {
-              case_id: 'mock-case-1',
-              case_number: 'MH-2025-00043',
-              status: 'IN_PROGRESS',
-              priority: 'HIGH',
-              fraud_type: 'UPI_FRAUD',
-              fraud_amount: 85000,
-              victim_name: 'Ramesh Kumar',
-              victim_city: 'Mumbai',
-              destination_account: {
-                account_number: '1234567890',
-                bank: 'SBI',
-                upi_id: 'fraudster@upi',
-              },
-              location_confidence: 0.87,
-              created_at: new Date().toISOString(),
-            },
-          ],
-          pagination: {
-            total: 156,
-            limit: params?.limit || 20,
-            offset: params?.offset || 0,
-            has_more: true,
-          },
-        };
-        return { success: true, data: mockResponse };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to list cases',
@@ -342,57 +281,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockDetails: CaseDetails = {
-          case_id: caseId,
-          case_number: 'MH-2025-00043',
-          status: 'IN_PROGRESS',
-          priority: 'HIGH',
-          complaint: {
-            ncrp_id: 'NCRP-2025-MH-123456',
-            fraud_type: 'UPI_FRAUD',
-            fraud_amount: 85000,
-            description: 'Victim received call claiming to be bank executive...',
-            reported_at: new Date().toISOString(),
-          },
-          destination_account: {
-            account_number: '1234567890',
-            bank: 'SBI',
-            ifsc: 'SBIN0001234',
-            upi_id: 'fraudster@upi',
-          },
-          victim: {
-            name: 'Ramesh Kumar',
-            phone: '+919876543210',
-            city: 'Mumbai',
-          },
-          prediction: {
-            predicted_atm: {
-              id: 'atm-1',
-              name: 'SBI ATM Thane West',
-              bank: 'SBI',
-              address: 'Station Road, Thane West',
-            },
-            time_window: {
-              start: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-              end: new Date(Date.now() + 45 * 60 * 1000).toISOString(),
-            },
-            confidence: 0.87,
-            alternative_locations: [],
-          },
-          mule_accounts_summary: {
-            total: 4,
-            active: 1,
-            frozen: 3,
-            total_amount: 78500,
-          },
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        return { success: true, data: mockDetails };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get case details',
@@ -413,28 +301,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockData = {
-          case_id: caseId,
-          mule_accounts: [
-            {
-              id: 'mule-1',
-              account_number: '9876543210',
-              bank: 'HDFC',
-              holder_name: 'Unknown',
-              amount_received: 45000,
-              current_balance: 12000,
-              status: 'FROZEN' as const,
-              mule_confidence: 0.92,
-              hop_number: 1,
-              risk_indicators: ['New account (< 30 days)', 'High transaction velocity', 'Night-time transactions'],
-            },
-          ],
-        };
-        return { success: true, data: mockData };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get mule accounts',
@@ -455,29 +321,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockData = {
-          case_id: caseId,
-          transactions: [
-            {
-              id: 'txn-1',
-              from_account: 'VICTIM_ACC',
-              from_bank: 'ICICI',
-              to_account: 'MULE_001',
-              to_bank: 'SBI',
-              amount: 85000,
-              transaction_type: 'IMPS' as const,
-              transaction_id: 'IMPS123456789',
-              timestamp: new Date().toISOString(),
-              hop_number: 1,
-              status: 'COMPLETED' as const,
-            },
-          ],
-        };
-        return { success: true, data: mockData };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get transactions',
@@ -504,21 +347,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockResponse: FreezeResponse = {
-          freeze_id: 'freeze-' + Date.now(),
-          npci_reference: 'FREEZE-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
-          status: 'COMPLETED',
-          accounts_frozen: accountIds?.length || 4,
-          total_amount_secured: 78500,
-          freeze_time_ms: 47,
-          frozen_accounts: [],
-          message: 'Successfully frozen accounts. Amount secured: ₹78,500.00',
-        };
-        return { success: true, data: mockResponse };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to freeze accounts',
@@ -539,22 +367,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockResponse: FreezeStatusResponse = {
-          case_id: caseId,
-          summary: {
-            total_accounts: 4,
-            frozen: 3,
-            active: 1,
-            total_amount_secured: 78500,
-          },
-          accounts: [],
-          freeze_history: [],
-        };
-        return { success: true, data: mockResponse };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get freeze status',
@@ -575,73 +387,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockReport: CaseReport = {
-          case_id: caseId,
-          case_number: 'MH-2025-84721',
-          status: 'RESOLVED',
-          outcome_summary: {
-            total_fraud_amount: 350000,
-            amount_recovered: 310000,
-            recovery_rate: 88.6,
-            response_time_seconds: 1380,
-            response_time_formatted: '23 minutes',
-            mule_accounts_frozen: 4,
-            suspect_apprehended: true,
-          },
-          ai_prediction_accuracy: {
-            location_match: 'exact',
-            location_accuracy: 100,
-            time_accuracy: 92,
-            mule_detection_accuracy: 87,
-            overall_confidence: 94,
-          },
-          analysis_steps: [
-            { step: 1, title: 'Complaint Analysis', description: 'Extracted victim details, transaction IDs, and fraud type (OTP scam)', time_seconds: 2.3, color: '#3b82f6' },
-            { step: 2, title: 'Money Trail Tracing', description: 'Mapped ₹3.5L through 4 mule accounts across 3 banks', time_seconds: 8.7, details: 'SBI → HDFC → ICICI → Axis', color: '#6366f1' },
-            { step: 3, title: 'Mule Network Detection', description: 'Identified 4 accounts as part of known fraud network', time_seconds: 5.2, color: '#8b5cf6' },
-            { step: 4, title: 'Location Prediction', description: 'CST-Transformer predicted HDFC ATM, Lokhandwala', time_seconds: 3.4, confidence: 0.94, color: '#f97316' },
-            { step: 5, title: 'Action Execution', description: 'Auto-froze 4 accounts + dispatched Team Alpha-7', time_seconds: 4.7, color: '#22c55e' },
-          ],
-          ai_insights: [
-            { icon: '🎯', title: 'Why This Location?', description: "Primary mule's KYC address is 1.2 km from this ATM. Historical data shows 73% of mules withdraw within 2 km of registered address." },
-            { icon: '⏱️', title: 'Why This Time Window?', description: 'Fraud occurred at 10:47 AM. Pattern analysis shows 89% of withdrawals happen within 30-60 min of last transfer.' },
-            { icon: '🔗', title: 'Network Connection', description: 'This mule network is connected to 12 previous cases. Same mastermind operating since Aug 2024.' },
-            { icon: '🏦', title: 'Cross-Bank Pattern', description: 'Federated Learning detected rapid cascade pattern (< 5 min between transfers) + Account age < 6 months = 94% fraud probability.' },
-          ],
-          feature_importance: [
-            { feature: "Mule's Address Proximity", importance: 35, color: '#f59e0b' },
-            { feature: 'Historical Patterns', importance: 28, color: '#f59e0b' },
-            { feature: 'ATM Cash Availability', importance: 18, color: '#f97316' },
-            { feature: 'Time of Day Pattern', importance: 12, color: '#f97316' },
-            { feature: 'Network Behavior', importance: 7, color: '#eab308' },
-          ],
-          technical_details: {
-            model: 'AEGIS-CST-Transformer-v2.1',
-            training_data: '1.2M transactions',
-            federated_banks: 12,
-            location_accuracy: '94.2%',
-            inference_time_ms: 23.4,
-          },
-          victim: { name: 'Rajesh Kumar Gupta', city: 'Mumbai' },
-          prediction: {
-            predicted_atm: { name: 'HDFC ATM Lokhandwala', bank: 'HDFC', address: 'Lokhandwala Complex, Andheri West' },
-            confidence: 0.94,
-            time_window: { start: new Date().toISOString(), end: new Date(Date.now() + 30 * 60000).toISOString() },
-          },
-          mule_accounts: [
-            { bank: 'HDFC', status: 'FROZEN', amount: 85000, confidence: 0.92 },
-            { bank: 'SBI', status: 'FROZEN', amount: 120000, confidence: 0.89 },
-            { bank: 'ICICI', status: 'FROZEN', amount: 95000, confidence: 0.87 },
-            { bank: 'Axis', status: 'FROZEN', amount: 50000, confidence: 0.85 },
-          ],
-          created_at: new Date().toISOString(),
-          resolved_at: new Date().toISOString(),
-        };
-        return { success: true, data: mockReport };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get case report',
@@ -663,13 +408,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        return {
-          success: true,
-          data: { message: 'Outcome recorded successfully. Thank you for helping improve AEGIS!' },
-        };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to record outcome',
@@ -702,17 +440,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        return {
-          success: true,
-          data: {
-            case_id: caseId,
-            mule_accounts: [],
-          },
-        };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get mule accounts',
@@ -753,20 +480,6 @@ export const caseService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockTimeline: CaseTimeline = {
-          case_id: caseId,
-          case_number: 'MH-2025-00043',
-          events: [
-            { timestamp: new Date().toISOString(), type: 'case_created', title: 'Case Created', description: 'Case registered from NCRP complaint', icon: 'document', color: '#3b82f6' },
-            { timestamp: new Date().toISOString(), type: 'ai_analysis', title: 'AI Analysis Complete', description: 'Predicted location with 94% confidence', icon: 'sparkles', color: '#8b5cf6' },
-            { timestamp: new Date().toISOString(), type: 'freeze', title: 'Accounts Frozen', description: '4 accounts frozen, ₹78,500 secured', icon: 'snow', color: '#06b6d4' },
-          ],
-        };
-        return { success: true, data: mockTimeline };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get timeline',

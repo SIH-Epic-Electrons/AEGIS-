@@ -949,14 +949,25 @@ export default function MapScreen() {
           </React.Fragment>
         ))}
 
-        {/* Risk Zone Circle */}
+        {/* Risk Zone Circle - Large radius with color fill around hotspot */}
         {displayHotspot && !showIndiaView && (
           <Circle
             center={displayHotspot.location}
-            radius={500}
+            radius={2000}
+            strokeWidth={3}
+            strokeColor="rgba(239, 68, 68, 0.6)"
+            fillColor="rgba(239, 68, 68, 0.25)"
+          />
+        )}
+        
+        {/* Additional inner circle for better visibility */}
+        {displayHotspot && !showIndiaView && (
+          <Circle
+            center={displayHotspot.location}
+            radius={1000}
             strokeWidth={2}
-            strokeColor="rgba(239, 68, 68, 0.3)"
-            fillColor="rgba(239, 68, 68, 0.15)"
+            strokeColor="rgba(239, 68, 68, 0.4)"
+            fillColor="rgba(239, 68, 68, 0.1)"
           />
         )}
 

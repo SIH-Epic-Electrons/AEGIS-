@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/theme';
 import { freezeAccounts, FreezeRequest } from '../services/freezeService';
+import { caseService } from '../api/caseService';
+import { extractMuleAccountsFromTransactions, transformApiMuleAccount } from '../utils/muleAccountUtils';
 
 interface MuleAccount {
   id: string;
@@ -27,6 +29,9 @@ interface MuleAccount {
   accountAge: string;
   location: string;
   status: 'active' | 'withdrawn' | 'frozen';
+  muleConfidence?: number;
+  riskIndicators?: string[];
+  hopNumber?: number;
 }
 
 export default function MuleAccountsScreen() {
@@ -35,76 +40,137 @@ export default function MuleAccountsScreen() {
   const navigation = useNavigation();
   const { caseId, muleAccounts: routeAccounts } = route.params as any;
 
-  // Default accounts matching MVP design exactly
-  const defaultAccounts: MuleAccount[] = [
-    {
-      id: '1',
-      bank: 'SBI',
-      bankName: 'State Bank of India',
-      accountNumber: 'XXXX XXXX 4521',
-      amountReceived: 210000,
-      currentBalance: 208500,
-      accountHolder: 'Suresh K***r',
-      ifscCode: 'SBIN0001234',
-      accountAge: '23 days (New)',
-      location: 'Andheri, Mumbai',
-      status: 'active',
-    },
-    {
-      id: '2',
-      bank: 'HDFC',
-      bankName: 'HDFC Bank',
-      accountNumber: 'XXXX XXXX 7832',
-      amountReceived: 100000,
-      currentBalance: 98200,
-      accountHolder: 'Ram***n P.',
-      ifscCode: 'HDFC0005678',
-      accountAge: '45 days (New)',
-      location: 'Thane, Maharashtra',
-      status: 'active',
-    },
-    {
-      id: '3',
-      bank: 'AXIS',
-      bankName: 'Axis Bank',
-      accountNumber: 'XXXX XXXX 2190',
-      amountReceived: 40000,
-      currentBalance: 0,
-      accountHolder: 'Unknown',
-      ifscCode: 'UTIB0001234',
-      accountAge: '60 days',
-      location: 'Vashi, Navi Mumbai',
-      status: 'withdrawn',
-    },
-  ];
-
-  // Always use default accounts if none provided, matching MVP design
-  const [muleAccounts, setMuleAccounts] = useState<MuleAccount[]>(() => {
-    if (routeAccounts && Array.isArray(routeAccounts) && routeAccounts.length > 0) {
-      // Map route accounts to match our interface
-      return routeAccounts.map((acc: any) => ({
-        id: acc.id || acc.accountId || `acc-${Math.random()}`,
-        bank: acc.bank || 'UNKNOWN',
-        bankName: acc.bankName || acc.bank || 'Bank',
-        accountNumber: acc.accountNumber || acc.account_number || 'XXXX XXXX XXXX',
-        amountReceived: acc.amountReceived || acc.amount_received || acc.amount || 0,
-        currentBalance: acc.currentBalance || acc.current_balance || acc.balance || 0,
-        accountHolder: acc.accountHolder || acc.account_holder || acc.holder || 'Unknown',
-        ifscCode: acc.ifscCode || acc.ifsc_code || acc.ifsc || 'XXXX0000000',
-        accountAge: acc.accountAge || acc.account_age || 'Unknown',
-        location: acc.location || 'Unknown',
-        status: (acc.status || 'active') as 'active' | 'withdrawn' | 'frozen',
-      }));
-    }
-    return defaultAccounts;
-  });
+  // Start with empty array - will be populated from API only (no dummy data)
+  const [muleAccounts, setMuleAccounts] = useState<MuleAccount[]>([]);
 
   const [freezing, setFreezing] = useState(false);
   const [freezingAccountId, setFreezingAccountId] = useState<string | null>(null);
   const [frozenAccounts, setFrozenAccounts] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
   const pulseAnim = useState(new Animated.Value(1))[0];
 
   const activeAccounts = muleAccounts.filter((acc) => acc.status === 'active');
+
+  // Load mule accounts from backend when component mounts
+  useEffect(() => {
+    const loadMuleAccounts = async () => {
+      if (!caseId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // PRIORITY 1: Use mule accounts passed from CaseDetailScreen (if available)
+        // This ensures data consistency between screens
+        if (routeAccounts && Array.isArray(routeAccounts) && routeAccounts.length > 0) {
+          console.log('✅ Using mule accounts passed from CaseDetailScreen:', routeAccounts.length, 'accounts');
+          console.log('📊 Route accounts data:', JSON.stringify(routeAccounts, null, 2));
+          // Ensure all required fields are present
+          const accounts: MuleAccount[] = routeAccounts.map((acc: any) => {
+            const mapped = {
+              id: acc.id || `acc-${Math.random()}`,
+              bank: acc.bank || 'Unknown',
+              bankName: acc.bankName || acc.bank || 'Unknown Bank',
+              accountNumber: acc.accountNumber || 'N/A',
+              amountReceived: acc.amountReceived || acc.amount || 0,
+              currentBalance: acc.currentBalance || 0,
+              accountHolder: acc.accountHolder || 'Unknown',
+              ifscCode: acc.ifscCode || 'XXXX0000000',
+              accountAge: acc.accountAge || 'Unknown',
+              location: acc.location || 'Unknown',
+              status: (acc.status || 'active') as 'active' | 'withdrawn' | 'frozen', // Preserve status from CaseDetailScreen
+              muleConfidence: acc.muleConfidence ?? acc.mule_confidence ?? acc.muleProbability,
+              riskIndicators: acc.riskIndicators || acc.risk_indicators || [],
+              hopNumber: acc.hopNumber ?? acc.hop_number,
+            };
+            console.log(`  → Account ${mapped.id}: ${mapped.bank} - ${mapped.accountNumber} - Status: ${mapped.status}`);
+            return mapped;
+          });
+          setMuleAccounts(accounts);
+          // Continue to fetch live mule accounts from API for latest status/risk indicators
+        }
+        
+        console.log('⚠️ No route accounts passed, loading from API...');
+        
+        // PRIORITY 2: Try to get mule accounts from dedicated endpoint
+        const muleResult = await caseService.getCaseMuleAccounts(caseId);
+        if (muleResult.success && muleResult.data?.mule_accounts && muleResult.data.mule_accounts.length > 0) {
+          console.log('Loaded mule accounts from API:', muleResult.data.mule_accounts);
+          // Use shared utility to transform API response
+          const accounts: MuleAccount[] = muleResult.data.mule_accounts.map((acc: any) => {
+            const transformed = transformApiMuleAccount(acc);
+            return {
+              id: transformed.id,
+              bank: transformed.bank,
+              bankName: transformed.bankName,
+              accountNumber: transformed.accountNumber,
+              amountReceived: transformed.amountReceived,
+              currentBalance: transformed.currentBalance,
+              accountHolder: transformed.accountHolder,
+              ifscCode: transformed.ifscCode,
+              accountAge: transformed.accountAge,
+              location: transformed.location,
+              status: transformed.status,
+              muleConfidence: transformed.muleConfidence,
+              riskIndicators: transformed.riskIndicators,
+              hopNumber: transformed.hopNumber,
+            };
+          });
+          setMuleAccounts(accounts);
+          return; // Successfully loaded, exit early
+        }
+        
+        // Fallback: Extract mule accounts from transactions (from CFCFRMS flow)
+        console.log('Mule accounts endpoint returned no data, extracting from transactions...');
+        const transactionsResult = await caseService.getCaseTransactions(caseId);
+        if (transactionsResult.success && transactionsResult.data?.transactions && transactionsResult.data.transactions.length > 0) {
+          // Use shared utility to extract mule accounts consistently
+          const extractedAccounts = extractMuleAccountsFromTransactions(
+            transactionsResult.data.transactions,
+            true // Skip victim account
+          );
+          
+          // Transform to MuleAccount format
+          const accounts: MuleAccount[] = extractedAccounts.map(acc => ({
+            id: acc.id,
+            bank: acc.bank,
+            bankName: acc.bankName,
+            accountNumber: acc.accountNumber,
+            amountReceived: acc.amountReceived,
+            currentBalance: acc.currentBalance,
+            accountHolder: acc.accountHolder,
+            ifscCode: acc.ifscCode,
+            accountAge: acc.accountAge,
+            location: acc.location,
+            status: acc.status,
+          muleConfidence: acc.muleConfidence,
+          riskIndicators: acc.riskIndicators,
+          hopNumber: acc.hopNumber,
+          }));
+          
+          if (accounts.length > 0) {
+            console.log('Extracted mule accounts from transactions:', accounts);
+            setMuleAccounts(accounts);
+            return; // Successfully extracted, exit early
+          }
+        }
+        
+        // Only use default accounts if no data found at all
+        console.warn('No mule accounts found from API or transactions, using empty list');
+        setMuleAccounts([]);
+      } catch (error) {
+        console.error('Error loading mule accounts:', error);
+        // Don't use default accounts on error - show empty state instead
+        setMuleAccounts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMuleAccounts();
+  }, [caseId, routeAccounts]); // Also watch routeAccounts to update when passed data changes
 
   React.useEffect(() => {
     Animated.loop(
@@ -377,13 +443,30 @@ export default function MuleAccountsScreen() {
         />
       </View>
 
+      {/* Loading Indicator */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#ef4444" />
+          <Text style={styles.loadingText}>Loading mule accounts...</Text>
+        </View>
+      )}
+
       {/* Account List */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {muleAccounts.map((account) => {
+        {muleAccounts.length === 0 && !loading ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="alert-circle-outline" size={48} color="#9ca3af" />
+            <Text style={styles.emptyStateTitle}>No Mule Accounts Found</Text>
+            <Text style={styles.emptyStateText}>
+              Mule accounts will appear here once money flow tracing is complete.
+            </Text>
+          </View>
+        ) : (
+          muleAccounts.map((account) => {
           const isFreezing = freezingAccountId === account.id;
           const isFrozen = frozenAccounts.has(account.id) || account.status === 'frozen';
           const isWithdrawn = account.status === 'withdrawn';
@@ -455,6 +538,14 @@ export default function MuleAccountsScreen() {
                     {formatCurrency(account.currentBalance)}
                   </Text>
                 </View>
+                <View style={styles.statBox}>
+                  <Text style={styles.statLabel}>AI Confidence</Text>
+                  <Text style={[styles.statValue, styles.statValueActive]}>
+                    {account.muleConfidence !== undefined
+                      ? `${Math.round((account.muleConfidence || 0) * 100)}%`
+                      : '—'}
+                  </Text>
+                </View>
               </View>
 
               <View style={styles.accountDetails}>
@@ -481,7 +572,24 @@ export default function MuleAccountsScreen() {
                   <Text style={styles.detailLabel}>Location</Text>
                   <Text style={styles.detailValue}>{account.location}</Text>
                 </View>
+                {account.hopNumber !== undefined && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Hop #</Text>
+                    <Text style={styles.detailValue}>{account.hopNumber}</Text>
+                  </View>
+                )}
               </View>
+
+              {account.riskIndicators && account.riskIndicators.length > 0 && (
+                <View style={styles.riskPills}>
+                  {account.riskIndicators.map((risk, idx) => (
+                    <View key={idx} style={styles.riskPill}>
+                      <Ionicons name="alert-circle" size={14} color="#991b1b" />
+                      <Text style={styles.riskPillText}>{risk}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
 
               {isWithdrawn ? (
                 <View style={styles.withdrawnInfo}>
@@ -517,7 +625,8 @@ export default function MuleAccountsScreen() {
               )}
             </View>
           );
-        })}
+          })
+        )}
       </ScrollView>
 
       {/* Bottom Actions */}
@@ -772,6 +881,28 @@ const styles = StyleSheet.create({
   statValueWithdrawn: {
     color: '#6b7280',
   },
+  riskPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  riskPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecdd3',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  riskPillText: {
+    fontSize: 12,
+    color: '#991b1b',
+    fontWeight: '600',
+  },
   accountDetails: {
     gap: 8,
     marginBottom: 12,
@@ -940,5 +1071,41 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
     textAlign: 'center',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    zIndex: 1000,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

@@ -17,6 +17,34 @@ from app.api.v1.endpoints.auth import get_current_officer
 router = APIRouter()
 
 
+@router.get("/reverse-geocode")
+async def reverse_geocode(
+    lat: float = Query(..., description="Latitude", ge=-90, le=90),
+    lon: float = Query(..., description="Longitude", ge=-180, le=180),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Reverse geocode coordinates to get address.
+    
+    Converts latitude/longitude to human-readable address.
+    """
+    from app.services.geocoding_service import get_geocoding_service
+    
+    geocoder = get_geocoding_service()
+    result = await geocoder.reverse_geocode(lat, lon)
+    
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find address for given coordinates"
+        )
+    
+    return {
+        "success": True,
+        "data": result
+    }
+
+
 @router.get("")
 async def list_atms(
     current_officer: Annotated[Officer, Depends(get_current_officer)],

@@ -28,8 +28,19 @@ class TeamDeploymentRequest(BaseModel):
     case_id: UUID
     target_lat: float
     target_lon: float
-    priority: str = "HIGH"  # URGENT/HIGH/NORMAL
+    priority: Optional[str] = "HIGH"  # URGENT/HIGH/NORMAL
     instructions: Optional[str] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "case_id": "123e4567-e89b-12d3-a456-426614174000",
+                "target_lat": 19.0760,
+                "target_lon": 72.8777,
+                "priority": "HIGH",
+                "instructions": "Deploy to predicted ATM location"
+            }
+        }
 
 
 @router.get("")

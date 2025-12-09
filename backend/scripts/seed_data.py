@@ -96,6 +96,20 @@ async def seed_officers(db: AsyncSession, stations: list) -> list:
     Use badge_id + password to login via /api/v1/auth/login endpoint.
     """
     officers = [
+        # Admin account - for system administration
+        Officer(
+            badge_id="admin",
+            name="System Administrator",
+            email="admin@aegis.gov.in",
+            password_hash=get_password_hash("admin123"),
+            phone="+91 99999 99999",
+            rank="System Admin",
+            designation="Administrator",
+            station_id=stations[0].id,  # Links to Mumbai station
+            is_active=True,
+            is_verified=True,
+            settings={"notifications_enabled": True, "dark_mode": False}
+        ),
         # Primary test account - use this for most API testing
         Officer(
             badge_id="MH-CYB-2024-001",
@@ -505,7 +519,8 @@ async def main():
         print("=" * 60)
         print("\n📋 Test with these credentials:")
         print("   POST /api/v1/auth/login")
-        print('   {"badge_id": "MH-CYB-2024-001", "password": "password123"}')
+        print("   Admin: username='admin', password='admin123'")
+        print('   Officer: username="MH-CYB-2024-001", password="password123"')
         print(f"\n📁 Sample case created: {case.case_number}")
         print("   GET /api/v1/cases/{case_id}")
 

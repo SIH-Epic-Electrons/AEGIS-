@@ -9,11 +9,15 @@ import {
   Dimensions,
   Modal,
   SafeAreaView,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/theme';
+import { caseService } from '../api/caseService';
+import { extractMuleAccountsFromTransactions } from '../utils/muleAccountUtils';
 // Using View-based visualization for better compatibility
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -48,9 +52,16 @@ export default function MuleNetworkScreen() {
 
   const [selectedNode, setSelectedNode] = useState<NetworkNode | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [nodes, setNodes] = useState<NetworkNode[]>([]);
+  const [cstPrediction, setCstPrediction] = useState<any>(null);
+  const [frozenAccountIds, setFrozenAccountIds] = useState<Set<string>>(new Set());
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    loadNetworkData();
+    loadCSTPrediction();
+    
     // Pulse animation for predicted ATM
     Animated.loop(
       Animated.sequence([
@@ -66,197 +77,245 @@ export default function MuleNetworkScreen() {
         }),
       ])
     ).start();
-  }, []);
+  }, [caseId]);
 
-  // Network nodes matching MVP design exactly
-  const nodes: NetworkNode[] = [
-    {
-      id: 'victim',
-      type: 'victim',
-      name: 'Rajesh G.',
-      bank: 'ICICI Bank',
-      accountNumber: 'XXXX-XXXX-4521',
-      accountHolder: 'Rajesh Gupta',
-      amount: 350000,
-      status: 'active',
-      x: 160,
-      y: 50,
-      label: 'VICTIM',
-      tooltip: {
-        title: '● VICTIM',
-        details: [
-          'Name: Rajesh Gupta',
-          'Bank: ICICI Bank',
-          'A/C: XXXX-XXXX-4521',
-          'Lost: ₹3,50,000',
-        ],
-      },
-    },
-    {
-      id: 'm1',
-      type: 'mule',
-      name: 'M1',
-      bank: 'SBI',
-      accountNumber: 'XXXX-XXXX-7832',
-      accountHolder: 'Amit Kumar',
-      amount: 350000,
-      status: 'active',
-      x: 80,
-      y: 160,
-      label: 'M1',
-      muleNumber: 'M1',
-      tooltip: {
-        title: '● ACTIVE MULE',
-        details: [
-          'Name: Amit Kumar',
-          'Bank: SBI',
-          'A/C: XXXX-XXXX-7832',
-          'Received: ₹3,50,000',
-          '⚠ Flagged for freeze',
-        ],
-      },
-    },
-    {
-      id: 'm2',
-      type: 'unknown',
-      name: 'M2',
-      bank: 'Unused',
-      accountNumber: '',
-      accountHolder: '',
-      amount: 0,
-      status: 'unused',
-      x: 240,
-      y: 160,
-      label: 'M2',
-      muleNumber: 'M2',
-      tooltip: {
-        title: '● UNUSED PATH',
-        details: [
-          'No transactions detected',
-          'Linked to network',
-          'Status: Monitoring',
-        ],
-      },
-    },
-    {
-      id: 'm3',
-      type: 'mule',
-      name: 'M3',
-      bank: 'HDFC',
-      accountNumber: 'XXXX-XXXX-9156',
-      accountHolder: 'Vikram Singh',
-      amount: 210000,
-      status: 'active',
-      x: 60,
-      y: 280,
-      label: 'M3',
-      muleNumber: 'M3',
-      balance: 210000,
-      tooltip: {
-        title: '● ACTIVE MULE',
-        details: [
-          'Name: Vikram Singh',
-          'Bank: HDFC Bank',
-          'A/C: XXXX-XXXX-9156',
-          'Balance: ₹2,10,000',
-          '⚠ HIGH RISK - Freeze now',
-        ],
-      },
-    },
-    {
-      id: 'm4',
-      type: 'frozen',
-      name: 'M4',
-      bank: 'Axis Bank',
-      accountNumber: 'XXXX-XXXX-3241',
-      accountHolder: 'Suresh Patel',
-      amount: 100000,
-      status: 'frozen',
-      x: 140,
-      y: 280,
-      label: 'M4',
-      muleNumber: 'M4',
-      tooltip: {
-        title: '● FROZEN',
-        details: [
-          'Name: Suresh Patel',
-          'Bank: Axis Bank',
-          'A/C: XXXX-XXXX-3241',
-          'Frozen Amt: ₹1,00,000',
-          '✓ Frozen at 10:42 AM',
-        ],
-      },
-    },
-    {
-      id: 'm5',
-      type: 'unknown',
-      name: 'M5',
-      bank: 'Unknown',
-      accountNumber: '',
-      accountHolder: '',
-      amount: 0,
-      status: 'unused',
-      x: 200,
-      y: 280,
-      label: '-',
-      tooltip: {
-        title: '● UNKNOWN',
-        details: [
-          'Potential linked account',
-          'Under investigation',
-        ],
-      },
-    },
-    {
-      id: 'm6',
-      type: 'unknown',
-      name: 'M6',
-      bank: 'Unknown',
-      accountNumber: '',
-      accountHolder: '',
-      amount: 0,
-      status: 'unused',
-      x: 280,
-      y: 280,
-      label: '-',
-      tooltip: {
-        title: '● UNKNOWN',
-        details: [
-          'Potential linked account',
-          'Under investigation',
-        ],
-      },
-    },
-    {
-      id: 'atm',
-      type: 'unknown',
-      name: 'ATM',
-      bank: 'HDFC ATM',
-      accountNumber: 'Lokhandwala',
-      accountHolder: '',
-      amount: 210000,
-      status: 'active',
-      x: 60,
-      y: 360,
-      label: 'ATM',
-      tooltip: {
-        title: '⚡ PREDICTED WITHDRAWAL',
-        details: [
-          'HDFC ATM, Lokhandwala',
-          'Andheri West, Mumbai',
-          'Window: 11:15 - 11:45 AM',
-          'Confidence: 94%',
-        ],
-      },
-    },
-  ];
+  const loadCSTPrediction = async () => {
+    try {
+      const { predictionService } = await import('../api/predictionService');
+      const result = await predictionService.getCasePrediction(caseId);
+      if (result.success && result.data?.location_prediction?.primary) {
+        setCstPrediction(result.data.location_prediction.primary);
+      }
+    } catch (error) {
+      console.warn('Failed to load CST prediction:', error);
+    }
+  };
 
-  const activeNodes = nodes.filter(
-    (n) => n.type === 'mule' && n.status === 'active'
-  );
-  const totalNodes = nodes.length;
-  const activeCount = activeNodes.length;
-  const atRiskAmount = activeNodes.reduce((sum, n) => sum + (n.balance || n.amount), 0);
+  const loadNetworkData = async () => {
+    if (!caseId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Get case details to get fraud amount
+      const caseResponse = await caseService.getCaseDetails(caseId);
+      const originalFraudAmount = caseResponse.success && caseResponse.data?.complaint?.fraud_amount 
+        ? caseResponse.data.complaint.fraud_amount 
+        : null;
+      
+      // Get transactions from CFCFRMS (generated by simulator)
+      const transactionsResponse = await caseService.getCaseTransactions(caseId);
+      
+      if (transactionsResponse.success && transactionsResponse.data?.transactions) {
+        const txns = transactionsResponse.data.transactions;
+        
+        // Transform transactions to network nodes
+        const networkNodes = transformTransactionsToNetworkNodes(txns, originalFraudAmount);
+        setNodes(networkNodes);
+      } else {
+        // No transactions found - show empty state
+        console.log('No transactions found for case:', caseId);
+        setNodes([]);
+      }
+    } catch (error) {
+      console.error('Error loading network data:', error);
+      setNodes([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const transformTransactionsToNetworkNodes = (
+    transactions: any[],
+    originalFraudAmount: number | null = null
+  ): NetworkNode[] => {
+    const networkNodes: NetworkNode[] = [];
+    const processedAccounts = new Set<string>();
+    const accountMap = new Map<string, any>();
+    
+    // Sort transactions by hop_number and timestamp
+    const sortedTxns = [...transactions].sort((a, b) => {
+      if (a.hop_number !== b.hop_number) return a.hop_number - b.hop_number;
+      return new Date(a.transaction_timestamp || a.timestamp).getTime() - new Date(b.transaction_timestamp || b.timestamp).getTime();
+    });
+    
+    // Find victim account from first transaction
+    const firstTxn = sortedTxns.length > 0 ? sortedTxns[0] : null;
+    const victimAccount = firstTxn?.from_account || '';
+    
+    // Add victim node
+    if (firstTxn && originalFraudAmount) {
+      networkNodes.push({
+        id: 'victim',
+        type: 'victim',
+        name: firstTxn.from_holder_name || 'Victim',
+        bank: firstTxn.from_bank || 'Unknown Bank',
+        accountNumber: victimAccount ? `XXXX${victimAccount.slice(-4)}` : 'XXXX',
+        accountHolder: firstTxn.from_holder_name || 'Victim',
+        amount: originalFraudAmount,
+        status: 'active',
+        x: 160,
+        y: 50,
+        label: 'VICTIM',
+        balance: originalFraudAmount,
+        tooltip: {
+          title: '● VICTIM',
+          details: [
+            `Name: ${firstTxn.from_holder_name || 'Victim'}`,
+            `Bank: ${firstTxn.from_bank || 'Unknown Bank'}`,
+            `A/C: ${victimAccount ? `XXXX${victimAccount.slice(-4)}` : 'XXXX'}`,
+            `Lost: ₹${(originalFraudAmount / 100000).toFixed(1)}L`,
+          ],
+        },
+      });
+      processedAccounts.add(victimAccount);
+    }
+    
+    // Process transactions to create mule account nodes
+    let muleIndex = 1;
+    const hopGroups = new Map<number, any[]>();
+    
+    // Group by hop number
+    sortedTxns.forEach(txn => {
+      const hop = txn.hop_number || 1;
+      if (!hopGroups.has(hop)) {
+        hopGroups.set(hop, []);
+      }
+      hopGroups.get(hop)!.push(txn);
+    });
+    
+    // Process each hop
+    const maxHop = Math.max(...Array.from(hopGroups.keys()));
+    let yPosition = 160; // Start position for mules
+    
+    for (let hop = 1; hop <= maxHop; hop++) {
+      const hopTxns = hopGroups.get(hop) || [];
+      const uniqueAccounts = new Set<string>();
+      
+      // Collect unique accounts in this hop
+      hopTxns.forEach(txn => {
+        if (txn.to_account && !processedAccounts.has(txn.to_account)) {
+          uniqueAccounts.add(txn.to_account);
+        }
+      });
+      
+      // Create nodes for unique accounts
+      const accountsArray = Array.from(uniqueAccounts);
+      const accountsPerRow = Math.min(accountsArray.length, 4);
+      const availableWidth = Number(GRAPH_WIDTH) - 160;
+      const spacingValue = accountsPerRow > 1 ? availableWidth / (accountsPerRow - 1) : 0;
+      const startX = 80;
+      
+      accountsArray.forEach((accountId, idx) => {
+        // Find transaction for this account
+        const txn = hopTxns.find(t => t.to_account === accountId);
+        if (!txn) return;
+        
+        const isFraudster = hop === 1; // First hop = fraudster
+        const accountStatus = txn.status === 'FROZEN' ? 'frozen' : 
+                             txn.status === 'WITHDRAWN' ? 'withdrawn' : 
+                             frozenAccountIds.has(accountId) ? 'frozen' : 'active';
+        
+        const nodeType = accountStatus === 'frozen' ? 'frozen' : 
+                        accountStatus === 'withdrawn' ? 'unknown' : 'mule';
+        
+        const muleLabel = isFraudster ? 'FRAUDSTER' : `M${muleIndex++}`;
+        const accountName = isFraudster ? 'Fraudster' : 
+                           txn.to_holder_name || `Mule ${muleIndex - 1}`;
+        
+        const balance = txn.to_balance_after !== undefined && txn.to_balance_after !== null
+          ? txn.to_balance_after
+          : txn.amount || 0;
+        
+        const location = txn.to_location 
+          ? `${txn.to_location.city || ''}, ${txn.to_location.state || ''}`.trim()
+          : 'Unknown';
+        
+        const nodeX = startX + (idx * spacingValue);
+        
+        networkNodes.push({
+          id: accountId,
+          type: nodeType,
+          name: muleLabel,
+          bank: txn.to_bank || 'Unknown',
+          accountNumber: accountId ? `XXXX${accountId.slice(-4)}` : 'XXXX',
+          accountHolder: accountName,
+          amount: txn.amount || 0,
+          status: accountStatus,
+          x: nodeX,
+          y: yPosition,
+          label: muleLabel,
+          muleNumber: muleLabel,
+          balance: balance,
+          tooltip: {
+            title: accountStatus === 'frozen' ? '● FROZEN' : 
+                  isFraudster ? '● FRAUDSTER • ACTIVE' : '● ACTIVE MULE',
+            details: [
+              `Name: ${accountName}`,
+              `Bank: ${txn.to_bank || 'Unknown'}`,
+              `A/C: ${accountId ? `XXXX${accountId.slice(-4)}` : 'XXXX'}`,
+              accountStatus === 'frozen' 
+                ? `Frozen Amt: ₹${(balance / 100000).toFixed(1)}L`
+                : `Balance: ₹${(balance / 100000).toFixed(1)}L`,
+              accountStatus === 'frozen' 
+                ? '✓ Frozen'
+                : '⚠ Flagged for freeze',
+            ],
+          },
+        });
+        
+        processedAccounts.add(accountId);
+        accountMap.set(accountId, { txn, balance, status: accountStatus });
+      });
+      
+      // Move to next row
+      if (uniqueAccounts.size > 0) {
+        yPosition += 120;
+      }
+    }
+    
+    // Add predicted ATM node at the bottom
+    if (networkNodes.length > 0 && cstPrediction) {
+      const lastMule = networkNodes.filter(n => n.type === 'mule' && n.status === 'active').pop();
+      if (lastMule) {
+        networkNodes.push({
+          id: 'atm',
+          type: 'unknown',
+          name: 'ATM',
+          bank: cstPrediction.bank || 'ATM',
+          accountNumber: cstPrediction.address || 'Predicted Location',
+          accountHolder: '',
+          amount: lastMule.balance || lastMule.amount,
+          status: 'active',
+          x: 60,
+          y: yPosition + 80,
+          label: 'ATM',
+          tooltip: {
+            title: '⚡ PREDICTED WITHDRAWAL',
+            details: [
+              cstPrediction.name || 'Predicted ATM',
+              cstPrediction.address || 'Location',
+              `Window: ${cstPrediction.time_window?.start ? new Date(cstPrediction.time_window.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'Soon'} - ${cstPrediction.time_window?.end ? new Date(cstPrediction.time_window.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'Soon'}`,
+              `Confidence: ${Math.round((cstPrediction.confidence || 0.94) * 100)}%`,
+            ],
+          },
+        });
+      }
+    }
+    
+    return networkNodes;
+  };
+
+  // Re-transform nodes when CST prediction loads
+  useEffect(() => {
+    if (cstPrediction && nodes.length > 0) {
+      // Reload to include ATM node
+      loadNetworkData();
+    }
+  }, [cstPrediction]);
 
   const formatCurrency = (amount: number) => {
     if (amount >= 100000) {
@@ -278,17 +337,151 @@ export default function MuleNetworkScreen() {
   };
 
   const handleFreezeAll = () => {
+    const activeMuleNodes = nodes.filter(
+      (n) => n.type === 'mule' && n.status === 'active'
+    );
+    
+    if (activeMuleNodes.length === 0) {
+      Alert.alert('Info', 'No active accounts to freeze');
+      return;
+    }
+
+    // Navigate to MuleAccountsScreen which handles the freeze workflow
     // @ts-ignore - React Navigation type inference limitation
-    navigation.navigate('FreezeConfirmation' as never, {
+    navigation.navigate('MuleAccounts' as never, {
       caseId,
-      frozenAccounts: activeNodes.map((n) => ({
+      muleAccounts: activeMuleNodes.map((n) => ({
         id: n.id,
         bank: n.bank,
+        bankName: n.bank,
         accountNumber: n.accountNumber,
-        amount: n.balance || n.amount,
+        amountReceived: n.amount,
+        currentBalance: n.balance || n.amount,
+        accountHolder: n.accountHolder,
+        ifscCode: 'XXXX0000000',
+        accountAge: 'Unknown',
+        location: n.tooltip?.details.find(d => d.includes('Location')) || 'Unknown',
+        status: n.status,
       })),
-      responseTime: 47,
     } as never);
+  };
+
+  // Calculate stats from nodes
+  const activeNodes = React.useMemo(() => 
+    nodes.filter((n) => n.type === 'mule' && n.status === 'active'),
+    [nodes]
+  );
+  const totalNodes = nodes.length;
+  const activeCount = activeNodes.length;
+  const atRiskAmount = React.useMemo(() => 
+    activeNodes.reduce((sum, n) => sum + (n.balance || n.amount || 0), 0),
+    [activeNodes]
+  );
+
+  // Render network nodes dynamically
+  const renderNetworkNodes = () => {
+    if (loading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FFFFFF" />
+          <Text style={styles.loadingText}>Loading network data...</Text>
+        </View>
+      );
+    }
+
+    if (nodes.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <Ionicons name="alert-circle-outline" size={48} color="#9ca3af" />
+          <Text style={styles.emptyStateTitle}>No Network Data</Text>
+          <Text style={styles.emptyStateText}>
+            Network visualization will appear once CFCFRMS completes money flow tracing.
+          </Text>
+        </View>
+      );
+    }
+
+    // Group nodes by y position (rows)
+    const rows = new Map<number, NetworkNode[]>();
+    nodes.forEach(node => {
+      const y = node.y;
+      if (!rows.has(y)) {
+        rows.set(y, []);
+      }
+      rows.get(y)!.push(node);
+    });
+
+    const sortedRows = Array.from(rows.entries()).sort((a, b) => a[0] - b[0]);
+
+    return (
+      <View style={styles.graphCanvas}>
+        {sortedRows.map(([yPos, rowNodes], rowIdx) => {
+          // Victim row (centered)
+          if (rowNodes[0]?.type === 'victim') {
+            return (
+              <View key={`row-${rowIdx}`} style={styles.nodeRow}>
+                <View style={styles.spacer} />
+                <TouchableOpacity
+                  style={[styles.nodeCircle, { backgroundColor: '#22C55E' }]}
+                  onPress={() => handleNodePress(rowNodes[0])}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.nodeLabel}>VICTIM</Text>
+                  <Text style={styles.nodeSubLabel}>{rowNodes[0].name.slice(0, 8)}</Text>
+                </TouchableOpacity>
+                <View style={styles.spacer} />
+              </View>
+            );
+          }
+
+          // ATM row (centered, animated)
+          if (rowNodes[0]?.id === 'atm') {
+            return (
+              <View key={`row-${rowIdx}`} style={styles.atmRow}>
+                <Animated.View
+                  style={[
+                    styles.atmNode,
+                    {
+                      transform: [{ scale: pulseAnim }],
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={[styles.nodeCircle, { backgroundColor: '#EF4444', width: 40, height: 40, borderRadius: 20 }]}
+                    onPress={() => handleNodePress(rowNodes[0])}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.nodeLabel, { fontSize: 10 }]}>ATM</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+            );
+          }
+
+          // Mule rows (distributed)
+          return (
+            <View key={`row-${rowIdx}`} style={styles.nodeRow}>
+              {rowNodes.map((node, nodeIdx) => {
+                const nodeColor = getNodeColor(node);
+                const opacity = node.status === 'unused' ? 0.3 : node.status === 'frozen' ? 1 : 1;
+                
+                return (
+                  <TouchableOpacity
+                    key={node.id}
+                    style={[styles.nodeCircle, { backgroundColor: nodeColor, opacity }]}
+                    onPress={() => handleNodePress(node)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.nodeLabel}>{node.label}</Text>
+                    <Text style={styles.nodeSubLabel}>{node.bank.slice(0, 6)}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          );
+        })}
+      </View>
+    );
   };
 
   return (
@@ -318,103 +511,15 @@ export default function MuleNetworkScreen() {
       >
         {/* Network Visualization */}
         <View style={styles.graphContainer}>
-          <View style={styles.graphCanvas}>
-            {/* Simplified Network Visualization */}
-            {/* Top Row - Victim */}
-            <View style={styles.nodeRow}>
-              <View style={styles.spacer} />
-              <TouchableOpacity
-                style={[styles.nodeCircle, { backgroundColor: '#22C55E' }]}
-                onPress={() => handleNodePress(nodes[0])}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.nodeLabel}>VICTIM</Text>
-                <Text style={styles.nodeSubLabel}>Rajesh G.</Text>
-              </TouchableOpacity>
-              <View style={styles.spacer} />
-            </View>
-
-            {/* Middle Row - M1 and M2 */}
-            <View style={styles.nodeRow}>
-              <TouchableOpacity
-                style={[styles.nodeCircle, { backgroundColor: '#F97316' }]}
-                onPress={() => handleNodePress(nodes[1])}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.nodeLabel}>M1</Text>
-                <Text style={styles.nodeSubLabel}>SBI</Text>
-              </TouchableOpacity>
-              <View style={styles.spacer} />
-              <TouchableOpacity
-                style={[styles.nodeCircle, { backgroundColor: '#6B7280', opacity: 0.5 }]}
-                onPress={() => handleNodePress(nodes[2])}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.nodeLabel}>M2</Text>
-                <Text style={styles.nodeSubLabel}>Unused</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Bottom Row - M3, M4, M5, M6 */}
-            <View style={styles.nodeRow}>
-              <TouchableOpacity
-                style={[styles.nodeCircle, { backgroundColor: '#F97316' }]}
-                onPress={() => handleNodePress(nodes[3])}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.nodeLabel}>M3</Text>
-                <Text style={styles.nodeSubLabel}>HDFC</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.nodeCircle, { backgroundColor: '#EF4444' }]}
-                onPress={() => handleNodePress(nodes[4])}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.nodeLabel}>M4</Text>
-                <Text style={styles.nodeSubLabel}>FROZEN</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.nodeCircle, { backgroundColor: '#6B7280', opacity: 0.3 }]}
-                onPress={() => handleNodePress(nodes[5])}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.nodeLabel}>-</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.nodeCircle, { backgroundColor: '#6B7280', opacity: 0.3 }]}
-                onPress={() => handleNodePress(nodes[6])}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.nodeLabel}>-</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* ATM Node */}
-            <View style={styles.atmRow}>
-              <Animated.View
-                style={[
-                  styles.atmNode,
-                  {
-                    transform: [{ scale: pulseAnim }],
-                  },
-                ]}
-              >
-                <TouchableOpacity
-                  style={[styles.nodeCircle, { backgroundColor: '#EF4444', width: 40, height: 40, borderRadius: 20 }]}
-                  onPress={() => handleNodePress(nodes[7])}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[styles.nodeLabel, { fontSize: 10 }]}>ATM</Text>
-                </TouchableOpacity>
-              </Animated.View>
-            </View>
-          </View>
+          {renderNetworkNodes()}
 
           {/* Hover Instruction */}
-          <View style={styles.hoverHint}>
-            <Ionicons name="hand-left" size={12} color="#9CA3AF" />
-            <Text style={styles.hoverText}>Tap nodes for details</Text>
-          </View>
+          {!loading && nodes.length > 0 && (
+            <View style={styles.hoverHint}>
+              <Ionicons name="hand-left" size={12} color="#9CA3AF" />
+              <Text style={styles.hoverText}>Tap nodes for details</Text>
+            </View>
+          )}
         </View>
 
         {/* Legend */}
@@ -441,40 +546,46 @@ export default function MuleNetworkScreen() {
         </View>
 
         {/* Network Stats */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{totalNodes}</Text>
-            <Text style={styles.statLabel}>Nodes</Text>
+        {!loading && nodes.length > 0 && (
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{totalNodes}</Text>
+              <Text style={styles.statLabel}>Nodes</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{activeCount}</Text>
+              <Text style={styles.statLabel}>Active</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={[styles.statValue, { color: '#F97316' }]}>
+                {formatCurrency(atRiskAmount)}
+              </Text>
+              <Text style={styles.statLabel}>At Risk</Text>
+            </View>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{activeCount}</Text>
-            <Text style={styles.statLabel}>Active</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={[styles.statValue, { color: '#F97316' }]}>
-              {formatCurrency(atRiskAmount)}
-            </Text>
-            <Text style={styles.statLabel}>At Risk</Text>
-          </View>
-        </View>
+        )}
       </ScrollView>
 
       {/* Bottom Actions */}
-      <View style={styles.bottomActions}>
-        <TouchableOpacity
-          style={styles.freezeButton}
-          onPress={handleFreezeAll}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#EF4444', '#DC2626']}
-            style={styles.freezeButtonGradient}
+      {!loading && activeCount > 0 && (
+        <View style={styles.bottomActions}>
+          <TouchableOpacity
+            style={styles.freezeButton}
+            onPress={handleFreezeAll}
+            activeOpacity={0.8}
           >
-            <Ionicons name="ban" size={20} color="#FFFFFF" />
-            <Text style={styles.freezeButtonText}>Freeze All Active Nodes</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+            <LinearGradient
+              colors={['#EF4444', '#DC2626']}
+              style={styles.freezeButtonGradient}
+            >
+              <Ionicons name="ban" size={20} color="#FFFFFF" />
+              <Text style={styles.freezeButtonText}>
+                Freeze All Active Nodes ({activeCount})
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Node Details Modal */}
       <Modal
@@ -732,5 +843,35 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#CBD5E1',
     marginBottom: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    marginTop: 12,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

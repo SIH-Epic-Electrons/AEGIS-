@@ -42,6 +42,9 @@ export default function SplashScreen() {
         useNativeDriver: true,
       })
     ).start();
+
+    // Navigation is handled by App.tsx based on authentication state
+    // This component just displays the splash screen
   }, []);
 
   const spin = spinAnim.interpolate({

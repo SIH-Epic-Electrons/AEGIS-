@@ -75,6 +75,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
       // Always clear local storage
       await secureStorage.clear();
       set({ user: null, isAuthenticated: false, biometricEnabled: false, userRole: null });
+      
+      // Navigation will be handled by App.tsx based on isAuthenticated state
+      // The AppNavigator will automatically show WelcomeScreen when isAuthenticated is false
     }
   },
 

@@ -194,7 +194,7 @@ function AppNavigator() {
     // Register background sync
     syncManager.register();
     
-    // Show splash for 2 seconds
+    // Show splash for 2 seconds, then navigate to WelcomeScreen
     const splashTimer = setTimeout(() => {
       setShowSplash(false);
     }, 2000);
@@ -204,6 +204,14 @@ function AppNavigator() {
       clearTimeout(splashTimer);
     };
   }, []);
+
+  // Reset navigation to WelcomeScreen when authentication state changes to false
+  useEffect(() => {
+    if (!isAuthenticated && !isLoading && !showSplash) {
+      // Navigation will be handled by the Stack.Navigator below
+      // which shows WelcomeScreen when not authenticated
+    }
+  }, [isAuthenticated, isLoading, showSplash]);
 
   const checkPermissionsStatus = async () => {
     try {
@@ -231,10 +239,14 @@ function AppNavigator() {
     return <SplashScreen />;
   }
 
-  // Not authenticated - show welcome/auth screens
+  // Not authenticated - show welcome/auth screens (after splash screen)
+  // This ensures that after SplashScreen, users always see WelcomeScreen first
   if (!isAuthenticated) {
     return (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator 
+        screenOptions={{ headerShown: false }}
+        initialRouteName="Welcome"
+      >
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="OfficerAuth" component={AuthScreen} />
         <Stack.Screen name="AdminAuth" component={AdminAuthScreen} />

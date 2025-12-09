@@ -15,7 +15,9 @@ const getDevAPIUrl = () => {
   // For physical devices, use your computer's IP address
   // Update this IP to match your computer's IP (run ipconfig to find it)
   // Your current IP: 192.168.137.248
-  return 'http://192.168.137.248/api/v1';
+  // For emulator/localhost testing, use: http://localhost:8000/api/v1
+  // For physical device, use: http://192.168.137.248:8000/api/v1
+  return 'http://192.168.137.248:8000/api/v1';
 };
 
 export const API_BASE_URL = __DEV__

@@ -93,24 +93,6 @@ export const officerService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockOfficer: Officer = {
-          id: 'mock-officer-id',
-          badge_id: 'MH-CID-001',
-          name: 'Inspector Sharma',
-          email: 'sharma@mhpolice.gov.in',
-          phone: '+919876543210',
-          rank: 'Inspector',
-          designation: 'Cyber Crime Investigator',
-          avatar_url: undefined,
-          is_active: true,
-          settings: {},
-          created_at: new Date().toISOString(),
-        };
-        return { success: true, data: mockOfficer };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get profile',
@@ -129,24 +111,6 @@ export const officerService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockOfficer: Officer = {
-          id: 'mock-officer-id',
-          badge_id: 'MH-CID-001',
-          name: 'Inspector Sharma',
-          email: 'sharma@mhpolice.gov.in',
-          phone: updates.phone || '+919876543210',
-          rank: 'Inspector',
-          designation: 'Cyber Crime Investigator',
-          avatar_url: updates.avatar_url,
-          is_active: true,
-          settings: updates.settings || {},
-          created_at: new Date().toISOString(),
-        };
-        return { success: true, data: mockOfficer };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to update profile',
@@ -165,30 +129,6 @@ export const officerService = {
         data: response.data.data || response.data,
       };
     } catch (error: any) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
-        // Mock response for demo
-        const mockStats: OfficerStats = {
-          cases: {
-            total: 156,
-            resolved: 124,
-            successful: 98,
-            in_progress: 32,
-            success_rate: 79.0,
-          },
-          recovery: {
-            total_fraud_amount: 15000000,
-            total_recovered: 10800000,
-            recovery_rate: 72.0,
-          },
-          performance: {
-            avg_response_time_seconds: 285,
-            predictions_validated: 38,
-            prediction_accuracy: 87.5,
-          },
-        };
-        return { success: true, data: mockStats };
-      }
-
       return {
         success: false,
         error: error.response?.data?.detail || error.message || 'Failed to get statistics',

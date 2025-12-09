@@ -279,20 +279,26 @@ async def list_cases(
 
 @router.get("/{case_id}")
 async def get_case(
-    case_id: UUID,
+    case_id: str,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
 ):
     """Get detailed case information"""
     try:
+        # Try to parse as UUID first, if fails, try case_number
+        try:
+            case_uuid = UUID(case_id)
+            query = select(Case).where(Case.id == case_uuid)
+        except ValueError:
+            # Not a valid UUID, try case_number
+            query = select(Case).where(Case.case_number == case_id)
+        
         result = await db.execute(
-            select(Case)
-            .options(
+            query.options(
                 selectinload(Case.transactions),
                 selectinload(Case.mule_accounts),
                 selectinload(Case.predicted_atm)
             )
-            .where(Case.id == case_id)
         )
         case = result.scalar_one_or_none()
         
@@ -398,13 +404,30 @@ async def get_case(
 
 @router.get("/{case_id}/mule-accounts")
 async def get_case_mule_accounts(
-    case_id: UUID,
+    case_id: str,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
 ):
     """Get mule accounts for a case"""
+    # Try to parse as UUID first, if fails, try case_number
+    try:
+        case_uuid = UUID(case_id)
+        case_query = select(Case.id).where(Case.id == case_uuid)
+    except ValueError:
+        # Not a valid UUID, try case_number
+        case_query = select(Case.id).where(Case.case_number == case_id)
+    
+    case_result = await db.execute(case_query)
+    actual_case_id = case_result.scalar_one_or_none()
+    
+    if not actual_case_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Case not found"
+        )
+    
     result = await db.execute(
-        select(MuleAccount).where(MuleAccount.case_id == case_id)
+        select(MuleAccount).where(MuleAccount.case_id == actual_case_id)
     )
     mule_accounts = result.scalars().all()
     
@@ -433,15 +456,32 @@ async def get_case_mule_accounts(
 
 @router.get("/{case_id}/transactions")
 async def get_case_transactions(
-    case_id: UUID,
+    case_id: str,
     current_officer: Annotated[Officer, Depends(get_current_officer)],
     db: AsyncSession = Depends(get_db)
 ):
     """Get transaction trail for a case"""
     try:
+        # Try to parse as UUID first, if fails, try case_number
+        try:
+            case_uuid = UUID(case_id)
+            case_query = select(Case.id).where(Case.id == case_uuid)
+        except ValueError:
+            # Not a valid UUID, try case_number
+            case_query = select(Case.id).where(Case.case_number == case_id)
+        
+        case_result = await db.execute(case_query)
+        actual_case_id = case_result.scalar_one_or_none()
+        
+        if not actual_case_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Case not found"
+            )
+        
         result = await db.execute(
             select(Transaction)
-            .where(Transaction.case_id == case_id)
+            .where(Transaction.case_id == actual_case_id)
             .order_by(Transaction.hop_number)
         )
         transactions = result.scalars().all()
